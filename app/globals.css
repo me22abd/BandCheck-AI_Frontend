@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes bandcheck-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@layer utilities {
+  .bandcheck-animate-score {
+    animation: bandcheck-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* backwards: hidden during delay; forwards: hold end state */
+  .bandcheck-animate-cta {
+    animation: bandcheck-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.28s both;
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bandcheck-gauge-fill {
+  from {
+    stroke-dashoffset: var(--gauge-start, 0);
+  }
+  to {
+    stroke-dashoffset: var(--gauge-end, 0);
+  }
+}
+
+@layer utilities {
+  .animate-page-enter {
+    animation: page-fade-in 0.38s ease-out;
+  }
+
+  .bandcheck-gauge-progress {
+    stroke-dasharray: var(--gauge-circ, 0);
+    stroke-dashoffset: var(--gauge-start, 0);
+    animation: bandcheck-gauge-fill 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bandcheck-animate-score,
+  .bandcheck-animate-cta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .animate-page-enter {
+    animation: none !important;
+  }
+
+  .bandcheck-gauge-progress {
+    animation: none !important;
+    stroke-dashoffset: var(--gauge-end, 0) !important;
+  }
+}
