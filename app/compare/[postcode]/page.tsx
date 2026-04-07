@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getCheckAnalysisForPostcode } from "@/lib/checkAnalysis";
+import { baseUrl } from "@/lib/apiBaseUrl";
 import { councilTaxBandIndex } from "@/lib/scoring";
+
+type CheckResponse = {
+  userBand: string;
+  nearbyProperties: Array<{
+    address: string;
+    band: string;
+    distanceMiles?: number;
+  }>;
+};
 
 function formatPostcode(pc: string) {
   return pc.replace(/(.{3})$/, " $1");
@@ -47,9 +56,27 @@ export default async function ComparePage({
   const formatted = formatPostcode(compact);
   const resultsHref = `/results/${encodeURIComponent(compact)}`;
 
-  const analysis = await getCheckAnalysisForPostcode(compact);
+  let apiData: CheckResponse | null = null;
+  try {
+    const res = await fetch(`${baseUrl}/api/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postcode: compact }),
+      cache: "no-store",
+    });
+    if (res.ok) {
+      apiData = (await res.json()) as CheckResponse;
+    } else {
+      const errJson = (await res.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+      console.error("Check API error:", res.status, errJson?.error ?? "Unknown");
+    }
+  } catch (e) {
+    console.error("Check API error:", e);
+  }
 
-  if (!analysis.ok) {
+  if (!apiData) {
     return (
       <div className="min-h-screen bg-slate-50">
         <SiteHeader />
@@ -72,7 +99,7 @@ export default async function ComparePage({
     );
   }
 
-  const { userBand, nearbyProperties } = analysis.data;
+  const { userBand, nearbyProperties } = apiData;
   const mockProperties = nearbyProperties;
   const count = mockProperties.length;
   const hasComparable = count > 0;

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getCheckAnalysisForPostcode } from "@/lib/checkAnalysis";
+import { baseUrl } from "@/lib/apiBaseUrl";
 import {
   calculateCaseStrengthScore,
   formatMicroProof,
@@ -88,14 +88,30 @@ export default async function ResultsPage({
   const formatted = formatPostcode(compact);
   const pathPostcode = compact;
 
-  const analysisResult = await getCheckAnalysisForPostcode(compact);
+  let apiData: { userBand: string; nearbyProperties: NearbyProperty[] } | null = null;
+  try {
+    const res = await fetch(`${baseUrl}/api/check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postcode: compact }),
+      cache: "no-store",
+    });
+    if (res.ok) {
+      apiData = (await res.json()) as {
+        userBand: string;
+        nearbyProperties: NearbyProperty[];
+      };
+    } else {
+      const errJson = (await res.json().catch(() => null)) as
+        | { error?: string }
+        | null;
+      console.error("Check API error:", res.status, errJson?.error ?? "Unknown");
+    }
+  } catch (e) {
+    console.error("Check API error:", e);
+  }
 
-  if (!analysisResult.ok) {
-    console.error(
-      "Check analysis error:",
-      analysisResult.status,
-      analysisResult.message,
-    );
+  if (!apiData) {
     return (
       <div className="min-h-screen bg-slate-50">
         <SiteHeader />
@@ -118,7 +134,7 @@ export default async function ResultsPage({
     );
   }
 
-  const { userBand, nearbyProperties } = analysisResult.data;
+  const { userBand, nearbyProperties } = apiData;
 
   const { score, lowerCount, label, lowConfidence } =
     calculateCaseStrengthScore(userBand, nearbyProperties);

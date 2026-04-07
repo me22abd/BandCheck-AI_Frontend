@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { baseUrl } from "@/lib/apiBaseUrl";
 
 const benefits = [
   "No upfront cost",
@@ -20,6 +21,13 @@ export default function AppealPage() {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
+    fetch(`${baseUrl}/api/lead`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim() }),
+    }).catch(() => {
+      // Keep UX unchanged even if lead endpoint fails.
+    });
     window.setTimeout(() => {
       setSuccess(true);
       setLoading(false);
