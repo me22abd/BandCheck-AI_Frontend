@@ -78,7 +78,7 @@ export default async function ComparePage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
         <SiteHeader />
         <main className="px-6 py-16 text-slate-900 sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
@@ -116,14 +116,14 @@ export default async function ComparePage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
       <SiteHeader />
       <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
         <div className="mx-auto w-full max-w-5xl">
           <p className="text-center text-sm font-medium uppercase tracking-wide text-slate-500">
             {formatted}
           </p>
-          <h1 className="mt-1 text-center text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-1 text-center text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
             Comparable properties
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-center text-base leading-relaxed text-slate-600 sm:text-lg">
@@ -131,7 +131,7 @@ export default async function ComparePage({
             stacks up.
           </p>
 
-          <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md shadow-slate-200/40">
+          <div className="mt-10 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-slate-200/55 transition-all duration-200 hover:shadow-2xl">
             {hasComparable ? (
               <>
                 <div className="overflow-x-auto">
@@ -159,7 +159,7 @@ export default async function ComparePage({
                       {mockProperties.map((row, index) => (
                         <tr
                           key={`${row.address}-${index}`}
-                          className="border-b border-slate-100 last:border-b-0"
+                          className="border-b border-slate-100 last:border-b-0 transition-colors duration-200 hover:bg-slate-50/70"
                         >
                           <td className="px-4 py-4 font-medium text-slate-900 sm:px-6">
                             {row.address}
@@ -235,7 +235,7 @@ export default async function ComparePage({
               </p>
               <Link
                 href="/appeal"
-                className="flex min-h-14 w-full items-center justify-center rounded-xl bg-[#2563EB] px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-px hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Start Your Appeal →
               </Link>

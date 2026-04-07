@@ -43,12 +43,12 @@ export default function AppealPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
       <SiteHeader />
       <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
         <div className="mx-auto w-full max-w-4xl">
           {success ? (
-            <div className="overflow-hidden rounded-2xl border border-green-200/90 bg-white shadow-lg shadow-slate-200/50">
+            <div className="overflow-hidden rounded-2xl border border-green-200/80 bg-white shadow-xl shadow-slate-200/55 transition-all duration-200 hover:shadow-2xl">
               <div className="bg-gradient-to-br from-green-50 to-white px-8 py-12 text-center sm:px-12 sm:py-14">
                 <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-500 text-4xl text-white shadow-lg shadow-green-600/30">
                   ✓
@@ -62,7 +62,7 @@ export default function AppealPage() {
               </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-200/60 lg:grid lg:min-h-[520px] lg:grid-cols-2">
+            <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-slate-200/60 transition-all duration-200 hover:shadow-[0_28px_70px_-34px_rgba(15,23,42,0.35)] lg:grid lg:min-h-[520px] lg:grid-cols-2">
               <div className="flex flex-col justify-center bg-gradient-to-br from-[#1e3a5f] to-[#0f172a] px-8 py-12 text-white sm:px-10 lg:py-16">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/90">
                   BandCheck AI
@@ -122,7 +122,7 @@ export default function AppealPage() {
                   <button
                     type="submit"
                     disabled={!email.trim() || loading}
-                    className="mt-6 flex min-h-14 w-full items-center justify-center rounded-xl bg-[#2563EB] px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-px hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                    className="mt-6 flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                   >
                     {loading ? "Starting…" : "Continue to Appeal →"}
                   </button>

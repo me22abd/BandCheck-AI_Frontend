@@ -113,7 +113,7 @@ export default async function ResultsPage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
         <SiteHeader />
         <main className="px-6 py-16 text-slate-900 sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
@@ -144,7 +144,7 @@ export default async function ResultsPage({
   const totalNearby = nearbyProperties.length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
       <SiteHeader />
       <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
         <div className="mx-auto w-full max-w-5xl">
@@ -152,7 +152,7 @@ export default async function ResultsPage({
             <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
               Results for
             </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
               {formatted}
             </h1>
             <p className="mt-2">
@@ -166,24 +166,24 @@ export default async function ResultsPage({
           </div>
 
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md shadow-slate-200/40">
+            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-lg shadow-slate-200/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xl">
               <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Your council tax band
               </p>
               <div className="mt-4 flex justify-center">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-blue-100 text-5xl font-bold text-[#2563EB] shadow-inner ring-4 ring-blue-50 sm:h-32 sm:w-32 sm:text-6xl">
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-blue-100 text-5xl font-extrabold text-blue-700 shadow-inner ring-4 ring-blue-50 sm:h-32 sm:w-32 sm:text-6xl">
                   {userBand}
                 </div>
               </div>
               <p className="mt-5 text-center text-xs font-medium uppercase tracking-wide text-slate-500">
                 Annual cost (approx.)
               </p>
-              <p className="mt-1 text-center text-sm text-slate-500">
+              <p className="mt-1 text-center text-sm text-gray-600">
                 Varies by local authority — check your bill
               </p>
             </div>
 
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md shadow-slate-200/40">
+            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-xl shadow-slate-200/60 ring-1 ring-blue-100/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-2xl">
               <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Case strength
               </p>
@@ -200,7 +200,7 @@ export default async function ResultsPage({
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md shadow-slate-200/40">
+            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-lg shadow-slate-200/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xl">
               <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Nearby homes
               </p>
@@ -214,7 +214,7 @@ export default async function ResultsPage({
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-amber-200/90 bg-amber-50 px-5 py-5 shadow-sm sm:px-8 sm:py-6">
+          <div className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/90 px-6 py-6 shadow-lg shadow-amber-100/60 backdrop-blur-sm sm:px-8 sm:py-7">
             <p className="text-center text-lg font-semibold text-amber-950 sm:text-xl">
               <span aria-hidden>⚠️ </span>
               You may be overpaying. Our analysis suggests you could have a strong
@@ -232,7 +232,7 @@ export default async function ResultsPage({
           <div className="bandcheck-animate-cta mt-10 space-y-4">
             <Link
               href={`/compare/${encodeURIComponent(pathPostcode)}`}
-              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-[#2563EB] px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-px hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               View Full Breakdown →
             </Link>

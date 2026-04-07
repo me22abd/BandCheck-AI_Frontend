@@ -2,10 +2,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export default function ResultsLoading() {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
       <SiteHeader />
       <main className="flex flex-1 flex-col items-center justify-center px-6 py-16 sm:py-24">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200/90 bg-white p-8 shadow-lg shadow-slate-200/50 sm:p-10">
+        <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white/95 p-8 shadow-xl shadow-slate-200/55 backdrop-blur-sm sm:p-10">
           <div className="relative mx-auto h-36 w-36">
             <svg
               className="-rotate-90"
