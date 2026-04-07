@@ -82,6 +82,8 @@ export default async function ResultsPage({
 }: {
   params: Promise<{ postcode: string }>;
 }) {
+  console.log("API BASE URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
   const { postcode: postcodeParam } = await params;
   const decodedPostcode = decodeURIComponent(postcodeParam);
   const compact = decodedPostcode.replace(/\s+/g, "").toUpperCase();
