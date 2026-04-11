@@ -5,6 +5,7 @@ import { baseUrl } from "@/lib/apiBaseUrl";
 import {
   calculateCaseStrengthScore,
   formatMicroProof,
+  isBandLowerThan,
   type NearbyProperty,
 } from "@/lib/scoring";
 
@@ -145,6 +146,12 @@ export default async function ResultsPage({
   const nearbyHomesSummary = summarizeNearbyHomes(nearbyProperties);
   const totalNearby = nearbyProperties.length;
 
+  const appealComparables = nearbyProperties
+    .filter((p) => isBandLowerThan(p.band, userBand))
+    .slice(0, 5)
+    .map((p) => ({ address: p.address, band: p.band }));
+  const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
       <SiteHeader />
@@ -237,6 +244,12 @@ export default async function ResultsPage({
               className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               View Full Breakdown →
+            </Link>
+            <Link
+              href={`/appeal/start?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
+              className="flex min-h-14 w-full items-center justify-center rounded-xl border-2 border-blue-600 bg-white px-8 text-lg font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Start Appeal
             </Link>
             <p className="text-center">
               <Link
