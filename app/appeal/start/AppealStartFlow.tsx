@@ -29,6 +29,49 @@ const evidenceKeys = [
   "extensionHistory",
 ] as const;
 
+const STEP_NAV = [
+  { n: 1, label: "Details" },
+  { n: 2, label: "Evidence" },
+  { n: 3, label: "Review" },
+  { n: 4, label: "Submit" },
+] as const;
+
+const STEP_COPY: Record<
+  number,
+  { title: string; subtitle: string }
+> = {
+  1: {
+    title: "Appeal Details",
+    subtitle: "Let's start with some basic information.",
+  },
+  2: {
+    title: "Evidence",
+    subtitle: "Tell us which documents you have or plan to gather.",
+  },
+  3: {
+    title: "Review",
+    subtitle: "Check your details before generating your appeal pack.",
+  },
+  4: {
+    title: "Appeal pack",
+    subtitle: "Your submission summary and next steps.",
+  },
+};
+
+const inputClass =
+  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+
+const labelClass = "text-sm font-medium text-gray-700 mb-1 block";
+
+const sectionBlockClass =
+  "border border-gray-200 rounded-lg bg-gray-50 p-4 mb-4";
+
+const primaryBtnClass =
+  "inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-700 hover:-translate-y-[1px] disabled:pointer-events-none disabled:opacity-50";
+
+const secondaryBtnClass =
+  "inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50";
+
 function parseComparablesParam(raw: string | null): AppealComparableRow[] {
   if (!raw?.trim()) return [];
   try {
@@ -59,6 +102,27 @@ function formatPostcodeDisplay(compact: string) {
   const u = compact.replace(/\s+/g, "").toUpperCase();
   if (!u) return "";
   return u.replace(/(.{3})$/, " $1");
+}
+
+function buildAppealBackHref(sp: URLSearchParams): string {
+  const qp = new URLSearchParams();
+  const pc = sp.get("postcode")?.trim() ?? "";
+  const band = sp.get("band")?.trim() ?? "";
+  const comp = sp.get("comparables")?.trim() ?? "";
+  const postcode = pc.replace(/\s+/g, "").toUpperCase();
+  if (postcode) qp.set("postcode", postcode);
+  if (band) qp.set("band", band);
+  if (comp) qp.set("comparables", comp);
+  const q = qp.toString();
+  return q ? `/appeal?${q}` : "/appeal";
+}
+
+function togglePillClass(active: boolean) {
+  const base =
+    "rounded-md px-4 py-2 text-sm font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1";
+  return active
+    ? `${base} bg-blue-600 text-white shadow-sm`
+    : `${base} border border-gray-300 bg-white text-gray-700 hover:bg-gray-100`;
 }
 
 export default function AppealStartFlow() {
@@ -121,98 +185,187 @@ export default function AppealStartFlow() {
   const supportingNotesEmpty =
     !property.notes.trim() && !evidence.notes.trim();
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-blue-100/40">
-      <SiteHeader />
-      <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
-        <div className="mx-auto w-full max-w-3xl">
-          <p className="text-center text-sm font-medium uppercase tracking-wide text-slate-500">
-            Guided appeal
-          </p>
-          <h1 className="mt-1 text-center text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-            Build your appeal case
-          </h1>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-gray-600">
-            Step {step} of 4 — walk through property details, evidence, review, and
-            your appeal pack.
-          </p>
+  const appealBackHref = useMemo(
+    () => buildAppealBackHref(searchParams),
+    [searchParams],
+  );
 
-          <div className="mt-8 flex justify-center gap-2">
-            {[1, 2, 3, 4].map((n) => (
-              <span
-                key={n}
-                className={`h-2 w-8 rounded-full ${
-                  n === step ? "bg-blue-600" : "bg-slate-200"
-                }`}
-                aria-hidden
-              />
-            ))}
+  const resultsEditHref = resultsPostcode
+    ? `/results/${encodeURIComponent(resultsPostcode)}`
+    : "/";
+
+  const copy = STEP_COPY[step] ?? STEP_COPY[1];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <SiteHeader />
+      <main className="mx-auto max-w-3xl px-6 py-10 text-gray-900">
+        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+          <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-gray-200 pb-4">
+            <div className="justify-self-start">
+              {step === 1 ? (
+                <Link href={appealBackHref} className={secondaryBtnClass}>
+                  ← Back
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setStep((s) => Math.max(1, s - 1))}
+                  className={secondaryBtnClass}
+                >
+                  ← Back
+                </button>
+              )}
+            </div>
+            <nav
+              className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1 text-xs"
+              aria-label="Progress"
+            >
+              {STEP_NAV.map(({ n, label }, i) => (
+                <span key={n} className="inline-flex items-center gap-1">
+                  {i > 0 ? (
+                    <span className="px-1 text-gray-300" aria-hidden>
+                      —
+                    </span>
+                  ) : null}
+                  <span
+                    className={
+                      n === step
+                        ? "font-semibold text-blue-600"
+                        : n < step
+                          ? "font-medium text-gray-500"
+                          : "font-medium text-gray-400"
+                    }
+                  >
+                    <span className="tabular-nums">{n}</span> {label}
+                  </span>
+                </span>
+              ))}
+            </nav>
+            <span className="hidden sm:block" aria-hidden />
           </div>
 
-          <div className="mt-10 rounded-2xl border border-gray-100 bg-white p-6 shadow-lg shadow-slate-200/50 sm:p-8">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">
+              {copy.title}
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">{copy.subtitle}</p>
+          </div>
+
+          <div className="mt-6">
             {step === 1 ? (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Step 1 — Property details
-                </h2>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Property type
-                    <select
-                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                      value={property.propertyType}
-                      onChange={(e) =>
-                        setProperty((p) => ({
-                          ...p,
-                          propertyType: e.target.value as PropertyDetails["propertyType"],
-                        }))
+              <div>
+                <div className={sectionBlockClass}>
+                  <div className="mb-1 flex items-start justify-between gap-3">
+                    <span className="text-sm font-medium text-gray-700">
+                      Property address
+                    </span>
+                    {hasResultsContext ? (
+                      <Link
+                        href={resultsEditHref}
+                        className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </Link>
+                    ) : null}
+                  </div>
+                  {hasResultsContext ? (
+                    <p className="text-sm text-gray-900">
+                      {formattedPostcode}
+                      <span className="text-gray-500"> · </span>
+                      Band {resultsBand}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-600">
+                      Run a postcode check from the home page to attach your
+                      postcode and band to this appeal.
+                    </p>
+                  )}
+                </div>
+
+                <div className={sectionBlockClass}>
+                  <p className="mb-3 text-sm font-medium text-gray-900">
+                    Property classification
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={labelClass}>Property type</span>
+                      <select
+                        className={inputClass}
+                        value={property.propertyType}
+                        onChange={(e) =>
+                          setProperty((p) => ({
+                            ...p,
+                            propertyType: e.target
+                              .value as PropertyDetails["propertyType"],
+                          }))
+                        }
+                      >
+                        <option value="">Select…</option>
+                        <option value="house">House</option>
+                        <option value="flat">Flat</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className={labelClass}>Ownership</span>
+                      <select
+                        className={inputClass}
+                        value={property.ownership}
+                        onChange={(e) =>
+                          setProperty((p) => ({
+                            ...p,
+                            ownership: e.target
+                              .value as PropertyDetails["ownership"],
+                          }))
+                        }
+                      >
+                        <option value="">Select…</option>
+                        <option value="owner">Owner</option>
+                        <option value="tenant">Tenant</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={sectionBlockClass}>
+                  <span className={labelClass}>
+                    Extensions or major changes since you moved in?
+                  </span>
+                  <div
+                    className="flex gap-2"
+                    role="group"
+                    aria-label="Extensions or major changes"
+                  >
+                    <button
+                      type="button"
+                      aria-pressed={property.extensions === "yes"}
+                      onClick={() =>
+                        setProperty((p) => ({ ...p, extensions: "yes" }))
                       }
+                      className={togglePillClass(property.extensions === "yes")}
                     >
-                      <option value="">Select…</option>
-                      <option value="house">House</option>
-                      <option value="flat">Flat</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </label>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ownership
-                    <select
-                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                      value={property.ownership}
-                      onChange={(e) =>
-                        setProperty((p) => ({
-                          ...p,
-                          ownership: e.target.value as PropertyDetails["ownership"],
-                        }))
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={property.extensions === "no"}
+                      onClick={() =>
+                        setProperty((p) => ({ ...p, extensions: "no" }))
                       }
+                      className={togglePillClass(property.extensions === "no")}
                     >
-                      <option value="">Select…</option>
-                      <option value="owner">Owner</option>
-                      <option value="tenant">Tenant</option>
-                    </select>
-                  </label>
-                  <label className="block text-sm font-medium text-gray-700 sm:col-span-2">
-                    Extensions since you moved in?
-                    <select
-                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                      value={property.extensions}
-                      onChange={(e) =>
-                        setProperty((p) => ({
-                          ...p,
-                          extensions: e.target.value as PropertyDetails["extensions"],
-                        }))
-                      }
-                    >
-                      <option value="">Select…</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </label>
-                  <label className="block text-sm font-medium text-gray-700 sm:col-span-2">
-                    Notes (optional)
+                      No
+                    </button>
+                  </div>
+                </div>
+
+                <div className={sectionBlockClass}>
+                  <label className="block">
+                    <span className={labelClass}>Notes (optional)</span>
                     <textarea
                       rows={4}
-                      className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className={inputClass}
                       placeholder="Anything else we should know about the property…"
                       value={property.notes}
                       onChange={(e) =>
@@ -221,96 +374,95 @@ export default function AppealStartFlow() {
                     />
                   </label>
                 </div>
-                <div className="flex justify-end">
+
+                <div className="mt-6 flex justify-end">
                   <button
                     type="button"
                     disabled={!canProceedStep1()}
                     onClick={() => setStep(2)}
-                    className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+                    className={primaryBtnClass}
                   >
-                    Next
+                    Save &amp; Continue →
                   </button>
                 </div>
               </div>
             ) : null}
 
             {step === 2 ? (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Step 2 — Evidence checklist
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {evidenceCompleted} of 5 completed
-                </p>
-                <ul className="space-y-4">
-                  {(
-                    [
-                      ["councilTaxBill", "Council tax bill"],
-                      ["propertyPhotos", "Property photos"],
-                      ["floorplan", "Floorplan"],
-                      ["extensionHistory", "Extension history"],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <li key={key} className="flex items-start gap-3">
-                      <input
-                        id={key}
-                        type="checkbox"
-                        checked={evidence[key]}
-                        onChange={(e) =>
-                          setEvidence((ev) => ({
-                            ...ev,
-                            [key]: e.target.checked,
-                          }))
-                        }
-                        className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor={key} className="text-sm text-gray-800">
-                        {label}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-                <label className="block text-sm font-medium text-gray-700">
-                  Additional notes (optional)
-                  <textarea
-                    rows={3}
-                    className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                    placeholder="List documents you plan to gather…"
-                    value={evidence.notes}
-                    onChange={(e) =>
-                      setEvidence((ev) => ({ ...ev, notes: e.target.value }))
-                    }
-                  />
-                </label>
-                <div className="flex justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-semibold text-gray-800 shadow-sm transition-all duration-200 hover:bg-slate-50"
-                  >
-                    Back
-                  </button>
+              <div>
+                <div className={sectionBlockClass}>
+                  <p className="mb-3 text-sm text-gray-600">
+                    {evidenceCompleted} of 5 completed
+                  </p>
+                  <ul className="space-y-3">
+                    {(
+                      [
+                        ["councilTaxBill", "Council tax bill"],
+                        ["propertyPhotos", "Property photos"],
+                        ["floorplan", "Floorplan"],
+                        ["extensionHistory", "Extension history"],
+                      ] as const
+                    ).map(([key, label]) => (
+                      <li key={key} className="flex items-start gap-3">
+                        <input
+                          id={key}
+                          type="checkbox"
+                          checked={evidence[key]}
+                          onChange={(e) =>
+                            setEvidence((ev) => ({
+                              ...ev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label
+                          htmlFor={key}
+                          className="text-sm font-medium text-gray-800"
+                        >
+                          {label}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className={sectionBlockClass}>
+                  <label className="block">
+                    <span className={labelClass}>
+                      Additional notes (optional)
+                    </span>
+                    <textarea
+                      rows={3}
+                      className={inputClass}
+                      placeholder="List documents you plan to gather…"
+                      value={evidence.notes}
+                      onChange={(e) =>
+                        setEvidence((ev) => ({ ...ev, notes: e.target.value }))
+                      }
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-6 flex justify-end">
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700"
+                    className={primaryBtnClass}
                   >
-                    Next
+                    Save &amp; Continue →
                   </button>
                 </div>
               </div>
             ) : null}
 
             {step === 3 ? (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Step 3 — Review
-                </h2>
-                <div className="rounded-xl border border-gray-100 bg-slate-50/60 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div>
+                <div className={sectionBlockClass}>
+                  <p className="mb-3 text-sm font-semibold text-gray-900">
                     Property details
                   </p>
-                  <dl className="mt-3 space-y-2 text-sm text-gray-800">
+                  <dl className="space-y-2 text-sm text-gray-800">
                     <div className="flex justify-between gap-4">
                       <dt className="text-gray-600">Type</dt>
                       <dd className="font-medium capitalize">
@@ -339,11 +491,12 @@ export default function AppealStartFlow() {
                     ) : null}
                   </dl>
                 </div>
-                <div className="rounded-xl border border-gray-100 bg-slate-50/60 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                <div className={sectionBlockClass}>
+                  <p className="mb-3 text-sm font-semibold text-gray-900">
                     Evidence checklist
                   </p>
-                  <ul className="mt-3 space-y-1 text-sm text-gray-800">
+                  <ul className="space-y-1 text-sm text-gray-800">
                     <li>
                       Council tax bill:{" "}
                       {evidence.councilTaxBill ? "✓ Ready" : "○ Pending"}
@@ -367,12 +520,13 @@ export default function AppealStartFlow() {
                     ) : null}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-gray-100 bg-slate-50/60 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                <div className={sectionBlockClass}>
+                  <p className="mb-3 text-sm font-semibold text-gray-900">
                     Analysis from your check
                   </p>
                   {hasResultsContext ? (
-                    <div className="mt-3 space-y-2 text-sm text-gray-800">
+                    <div className="space-y-2 text-sm text-gray-800">
                       <div className="flex justify-between gap-4">
                         <dt className="text-gray-600">Postcode</dt>
                         <dd className="font-medium tabular-nums">
@@ -383,18 +537,18 @@ export default function AppealStartFlow() {
                         <dt className="text-gray-600">Your band</dt>
                         <dd className="font-medium">{resultsBand}</dd>
                       </div>
-                      <p className="pt-1 text-gray-700">
+                      <p className="text-gray-700">
                         Based on your results, your property is Band {resultsBand}.
                       </p>
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="text-sm text-gray-600">
                       Open this guided flow from your results page after a postcode
                       check to include your postcode and band here.
                     </p>
                   )}
                   {hasComparables ? (
-                    <div className="mt-4 border-t border-slate-200/80 pt-4">
+                    <div className="mt-4 border-t border-gray-200 pt-4">
                       <p className="text-sm text-gray-700">
                         These nearby properties are in a lower council tax band than
                         yours.
@@ -403,7 +557,7 @@ export default function AppealStartFlow() {
                         {comparables.map((row, i) => (
                           <li
                             key={`${row.address}-${row.band}-${i}`}
-                            className="flex justify-between gap-4 border-b border-slate-100 pb-2 text-sm last:border-b-0 last:pb-0"
+                            className="flex justify-between gap-4 border-b border-gray-100 pb-2 text-sm last:border-b-0 last:pb-0"
                           >
                             <span className="min-w-0 flex-1 text-gray-800">
                               {row.address}
@@ -416,241 +570,219 @@ export default function AppealStartFlow() {
                       </ul>
                     </div>
                   ) : hasResultsContext ? (
-                    <p className="mt-4 border-t border-slate-200/80 pt-4 text-sm text-gray-600">
+                    <p className="mt-4 border-t border-gray-200 pt-4 text-sm text-gray-600">
                       No comparable properties with lower bands were included in this
                       link.
                     </p>
                   ) : null}
                 </div>
-                <div className="flex justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-semibold text-gray-800 shadow-sm transition-all duration-200 hover:bg-slate-50"
-                  >
-                    Back
-                  </button>
+
+                <div className="mt-6 flex justify-end">
                   <button
                     type="button"
                     onClick={() => setStep(4)}
-                    className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700"
+                    className={primaryBtnClass}
                   >
-                    Next
+                    Save &amp; Continue →
                   </button>
                 </div>
               </div>
             ) : null}
 
             {step === 4 ? (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Step 4 — Appeal pack
-                </h2>
-
-                <div className="rounded-2xl bg-white p-6 shadow-lg">
-                  <h3 className="text-center text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+              <div>
+                <div className={sectionBlockClass}>
+                  <h2 className="text-base font-semibold text-gray-900">
                     Council Tax Appeal Submission
+                  </h2>
+                  <h3 className="mt-4 text-sm font-semibold text-gray-900">
+                    Section 1 — Property Summary
                   </h3>
+                  <dl className="mt-2 space-y-2 text-sm text-gray-600">
+                    <div className="flex flex-wrap justify-between gap-4">
+                      <dt>Postcode</dt>
+                      <dd className="font-medium text-gray-800 tabular-nums">
+                        {formattedPostcode || "—"}
+                      </dd>
+                    </div>
+                    <div className="flex flex-wrap justify-between gap-4">
+                      <dt>Council tax band</dt>
+                      <dd className="font-medium text-gray-800">
+                        {resultsBand ? `Band ${resultsBand}` : "—"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
 
-                  <section className="mt-12">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Section 1 — Property Summary
-                    </h4>
-                    <dl className="mt-4 space-y-2 text-sm text-gray-600">
-                      <div className="flex flex-wrap justify-between gap-4">
-                        <dt>Postcode</dt>
-                        <dd className="font-medium text-gray-800 tabular-nums">
-                          {formattedPostcode || "—"}
-                        </dd>
-                      </div>
-                      <div className="flex flex-wrap justify-between gap-4">
-                        <dt>Council tax band</dt>
-                        <dd className="font-medium text-gray-800">
-                          {resultsBand ? `Band ${resultsBand}` : "—"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </section>
+                <div className={sectionBlockClass}>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Section 2 — Grounds for Appeal
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                    This appeal is submitted on the basis that the property&apos;s
+                    council tax band may not reflect its value relative to similar
+                    homes in the area. Where nearby comparable properties sit in a
+                    lower band, that can indicate the listing authority should review
+                    whether the current band remains appropriate.
+                  </p>
+                </div>
 
-                  <section className="mt-12 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Section 2 — Grounds for Appeal
-                    </h4>
-                    <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                      This appeal is submitted on the basis that the property&apos;s
-                      council tax band may not reflect its value relative to similar
-                      homes in the area. Where nearby comparable properties sit in a
-                      lower band, that can indicate the listing authority should
-                      review whether the current band remains appropriate.
-                    </p>
-                  </section>
-
-                  <section className="mt-12 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Section 3 — Comparable Properties
-                    </h4>
-                    {hasComparables ? (
-                      <div className="mt-4 overflow-x-auto">
-                        <table className="w-full min-w-[240px] border-collapse text-left text-sm text-gray-800">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              <th className="py-2 pr-4 font-semibold">Address</th>
-                              <th className="py-2 font-semibold">Band</th>
+                <div className={sectionBlockClass}>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Section 3 — Comparable Properties
+                  </h3>
+                  {hasComparables ? (
+                    <div className="mt-3 overflow-x-auto">
+                      <table className="w-full min-w-[240px] border-collapse text-left text-sm text-gray-800">
+                        <thead>
+                          <tr className="border-b border-gray-200 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <th className="py-2 pr-4 font-semibold">Address</th>
+                            <th className="py-2 font-semibold">Band</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {comparables.map((row, i) => (
+                            <tr
+                              key={`${row.address}-${row.band}-${i}`}
+                              className="border-b border-gray-100 last:border-b-0"
+                            >
+                              <td className="py-2 pr-4 align-top text-gray-800">
+                                {row.address}
+                              </td>
+                              <td className="py-2 align-top font-medium tabular-nums">
+                                {row.band}
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {comparables.map((row, i) => (
-                              <tr
-                                key={`${row.address}-${row.band}-${i}`}
-                                className="border-b border-slate-100 last:border-b-0"
-                              >
-                                <td className="py-2 pr-4 align-top text-gray-800">
-                                  {row.address}
-                                </td>
-                                <td className="py-2 align-top font-medium tabular-nums">
-                                  {row.band}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <p className="mt-4 text-sm text-gray-600">
-                        No comparable properties were included. Open Start Appeal from
-                        your results after a postcode check to add them here.
-                      </p>
-                    )}
-                  </section>
-
-                  <section className="mt-12 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Why these properties were selected
-                    </h4>
-                    <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                      These properties were selected based on proximity to your postcode
-                      and similarity in property type where available. Only properties
-                      with lower council tax bands were included to support the appeal.
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-600">
+                      No comparable properties were included. Open Start Appeal from
+                      your results after a postcode check to add them here.
                     </p>
-                    {hasComparables ? (
-                      <p className="mt-4 text-sm text-gray-600">
-                        {comparables.length} comparable properties found within
-                        approximately 1km radius
-                      </p>
-                    ) : (
-                      <p className="mt-4 text-sm text-gray-600">
-                        No suitable lower-band comparable properties were identified
-                        within the selected radius.
-                      </p>
-                    )}
-                  </section>
+                  )}
+                </div>
 
-                  <section className="mt-12 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Section 4 — Supporting Notes
-                    </h4>
-                    {supportingNotesEmpty ? (
-                      <p className="mt-4 text-sm italic text-gray-600">
-                        No additional notes were added in this session.
-                      </p>
-                    ) : (
-                      <div className="mt-4 space-y-4 text-sm leading-relaxed text-gray-600">
-                        {property.notes.trim() ? (
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              Property details
-                            </p>
-                            <p className="mt-1 whitespace-pre-wrap">
-                              {property.notes}
-                            </p>
-                          </div>
-                        ) : null}
-                        {evidence.notes.trim() ? (
-                          <div>
-                            <p className="font-medium text-gray-800">Evidence</p>
-                            <p className="mt-1 whitespace-pre-wrap">
-                              {evidence.notes}
-                            </p>
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </section>
-
-                  <section className="mt-12 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-lg font-semibold text-gray-900">
-                      Section 5 — Data &amp; Methodology
-                    </h4>
-                    <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                      This assessment is based on nearby property comparisons and
-                      available postcode data.
+                <div className={sectionBlockClass}>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Why these properties were selected
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                    These properties were selected based on proximity to your postcode
+                    and similarity in property type where available. Only properties
+                    with lower council tax bands were included to support the appeal.
+                  </p>
+                  {hasComparables ? (
+                    <p className="mt-3 text-sm text-gray-600">
+                      {comparables.length} comparable properties found within
+                      approximately 1km radius
                     </p>
-                  </section>
-
-                  <section className="mt-10 border-t border-gray-100 pt-10">
-                    <h4 className="mb-1 text-xs font-semibold text-gray-500">
-                      Important Information
-                    </h4>
-                    <p className="mt-3 text-xs leading-relaxed text-gray-500">
-                      This document is provided for guidance purposes only and does not
-                      constitute legal advice. While care has been taken to present
-                      accurate and relevant information, users should verify all
-                      details before submitting an appeal to their local authority.
+                  ) : (
+                    <p className="mt-3 text-sm text-gray-600">
+                      No suitable lower-band comparable properties were identified
+                      within the selected radius.
                     </p>
-                  </section>
+                  )}
+                </div>
 
-                  <p className="mt-12 border-t border-slate-200 pt-6 text-center text-xs text-gray-500">
-                    Generated by BandCheck AI on {generatedOn}
+                <div className={sectionBlockClass}>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Section 4 — Supporting Notes
+                  </h3>
+                  {supportingNotesEmpty ? (
+                    <p className="mt-2 text-sm italic text-gray-600">
+                      No additional notes were added in this session.
+                    </p>
+                  ) : (
+                    <div className="mt-2 space-y-3 text-sm leading-relaxed text-gray-600">
+                      {property.notes.trim() ? (
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            Property details
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap">
+                            {property.notes}
+                          </p>
+                        </div>
+                      ) : null}
+                      {evidence.notes.trim() ? (
+                        <div>
+                          <p className="font-medium text-gray-800">Evidence</p>
+                          <p className="mt-1 whitespace-pre-wrap">
+                            {evidence.notes}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+
+                <div className={sectionBlockClass}>
+                  <h3 className="text-sm font-semibold text-gray-900">
+                    Section 5 — Data &amp; Methodology
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                    This assessment is based on nearby property comparisons and
+                    available postcode data.
                   </p>
                 </div>
 
-                <div className="mt-10">
-                  <p className="text-center text-sm font-medium text-gray-800">
-                    What would you like to do next?
+                <div className={sectionBlockClass}>
+                  <h3 className="text-xs font-semibold text-gray-500">
+                    Important Information
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    This document is provided for guidance purposes only and does not
+                    constitute legal advice. While care has been taken to present
+                    accurate and relevant information, users should verify all details
+                    before submitting an appeal to their local authority.
                   </p>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
-                    <button
-                      type="button"
-                      disabled
-                      className="cursor-not-allowed rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm opacity-60 disabled:pointer-events-none"
-                    >
-                      Download Appeal Pack (coming soon)
-                    </button>
-                    <button
-                      type="button"
-                      disabled
-                      className="cursor-not-allowed rounded-lg border border-slate-200 bg-white px-6 py-3 font-semibold text-gray-500 shadow-sm opacity-80 disabled:pointer-events-none"
-                    >
-                      View council submission guidance (coming soon)
-                    </button>
-                  </div>
                 </div>
 
-                <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-between">
+                <p className="mb-4 text-center text-xs text-gray-500">
+                  Generated by BandCheck AI on {generatedOn}
+                </p>
+
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
                   <button
                     type="button"
-                    onClick={() => setStep(3)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-3 font-semibold text-gray-800 shadow-sm transition-all duration-200 hover:bg-slate-50"
+                    disabled
+                    className="cursor-not-allowed rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-500 opacity-80"
                   >
-                    Back
+                    Download Appeal Pack (coming soon)
                   </button>
-                  <Link
-                    href="/"
-                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700"
+                  <button
+                    type="button"
+                    disabled
+                    className="cursor-not-allowed rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-500 opacity-80"
                   >
+                    View council submission guidance (coming soon)
+                  </button>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <Link href="/" className={`${secondaryBtnClass} text-center`}>
+                    ← Start over
+                  </Link>
+                  <Link href="/" className={`${primaryBtnClass} text-center`}>
                     Finish
                   </Link>
                 </div>
               </div>
             ) : null}
           </div>
-
-          <p className="mt-8 text-center text-sm text-gray-500">
-            <Link href="/appeal" className="font-medium text-blue-600 hover:underline">
-              ← Back to appeal entry
-            </Link>
-          </p>
         </div>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          <Link
+            href={appealBackHref}
+            className="font-medium text-gray-500 underline-offset-4 transition-colors hover:text-gray-800 hover:underline"
+          >
+            ← Back to appeal entry
+          </Link>
+        </p>
       </main>
     </div>
   );
