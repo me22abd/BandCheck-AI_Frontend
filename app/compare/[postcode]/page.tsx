@@ -16,12 +16,16 @@ function formatPostcode(pc: string) {
   return pc.replace(/(.{3})$/, " $1");
 }
 
-function bandBadgeClass(band: string) {
-  const b = band.toUpperCase().replace(/[^A-H]/g, "").charAt(0);
-  if (!b) return "bg-slate-100 text-slate-800 ring-slate-600/15";
-  if (b <= "C") return "bg-green-100 text-green-800 ring-green-600/25";
-  if (b === "D") return "bg-blue-100 text-blue-800 ring-blue-600/25";
-  return "bg-red-100 text-red-800 ring-red-600/25";
+function bandBadgeClass(band: string, userBand: string): string {
+  const base = "px-2 py-1 text-xs font-medium rounded-md";
+  const d = councilTaxBandIndex(band) - councilTaxBandIndex(userBand);
+  if (d < 0) return `${base} bg-green-100 text-green-700`;
+  if (d === 0) return `${base} bg-gray-100 text-gray-700`;
+  return `${base} bg-red-100 text-red-600`;
+}
+
+function userBandBadgeClass(): string {
+  return "px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700";
 }
 
 function bandDifferenceLabel(propertyBand: string, userBand: string): string {
@@ -34,9 +38,9 @@ function bandDifferenceLabel(propertyBand: string, userBand: string): string {
 function bandDifferenceTone(propertyBand: string, userBand: string): string {
   const d =
     councilTaxBandIndex(propertyBand) - councilTaxBandIndex(userBand);
-  if (d < 0) return "font-semibold text-green-700";
-  if (d === 0) return "font-medium text-slate-600";
-  return "font-semibold text-blue-800";
+  if (d < 0) return "font-medium text-green-600";
+  if (d === 0) return "text-gray-500";
+  return "font-medium text-red-600";
 }
 
 function formatDistanceMiles(miles?: number): string {
@@ -118,148 +122,122 @@ export default async function ComparePage({
   const summaryHref = `/summary/${encodeURIComponent(compact)}`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <SiteHeader />
-      <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
-        <div className="mx-auto w-full max-w-5xl">
-          <p className="text-center text-sm font-medium uppercase tracking-wide text-slate-500">
-            {formatted}
-          </p>
-          <h1 className="mt-1 text-center text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-            Comparable properties
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-base leading-relaxed text-slate-600 sm:text-lg">
-            These properties are similar to yours; compare bands to see how yours
-            stacks up.
-          </p>
+      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+        <div className="space-y-6">
 
-          <div className="mt-10 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-slate-200/55 transition-all duration-200 hover:shadow-2xl">
+          {/* Header */}
+          <div>
+            <Link
+              href={resultsHref}
+              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+            >
+              ← Back
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+              Comparable Properties
+            </h1>
+            <p className="mt-1 text-sm text-gray-600">
+              We found {count} similar propert{count === 1 ? "y" : "ies"} near {formatted}.
+            </p>
+          </div>
+
+          {/* Table card */}
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             {hasComparable ? (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50/90">
-                        <th className="px-4 py-3.5 font-semibold text-slate-700 sm:px-6">
-                          Address
-                        </th>
-                        <th className="px-4 py-3.5 font-semibold text-slate-700 sm:px-6">
-                          Distance
-                        </th>
-                        <th className="px-4 py-3.5 font-semibold text-slate-700 sm:px-6">
-                          Band
-                        </th>
-                        <th className="px-4 py-3.5 font-semibold text-slate-700 sm:px-6">
-                          Your band
-                        </th>
-                        <th className="px-4 py-3.5 font-semibold text-slate-700 sm:px-6">
-                          Difference
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mockProperties.map((row, index) => (
-                        <tr
-                          key={`${row.address}-${index}`}
-                          className="border-b border-slate-100 last:border-b-0 transition-colors duration-200 hover:bg-slate-50/70"
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-left">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      {["Address", "Distance", "Band", "Your Band", "Difference"].map((h) => (
+                        <th
+                          key={h}
+                          className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500"
                         >
-                          <td className="px-4 py-4 font-medium text-slate-900 sm:px-6">
-                            {row.address}
-                          </td>
-                          <td className="px-4 py-4 tabular-nums text-slate-500 sm:px-6">
-                            {formatDistanceMiles(row.distanceMiles)}
-                          </td>
-                          <td className="px-4 py-4 sm:px-6">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${bandBadgeClass(row.band)}`}
-                            >
-                              {row.band}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 sm:px-6">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${bandBadgeClass(userBand)}`}
-                            >
-                              {userBand}
-                            </span>
-                          </td>
-                          <td
-                            className={`px-4 py-4 tabular-nums sm:px-6 ${bandDifferenceTone(row.band, userBand)}`}
-                          >
-                            {bandDifferenceLabel(row.band, userBand)}
-                          </td>
-                        </tr>
+                          {h}
+                        </th>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-slate-200 bg-slate-50/80 px-4 py-4 text-sm sm:px-6">
-                  <span>
-                    <span className="font-medium text-slate-600">
-                      Lower bands:{" "}
-                    </span>
-                    <span className="font-semibold text-red-600">
-                      {lowerBands}
-                    </span>
-                  </span>
-                  <span>
-                    <span className="font-medium text-slate-600">
-                      Same band:{" "}
-                    </span>
-                    <span className="font-semibold text-slate-700">{sameBand}</span>
-                  </span>
-                  <span>
-                    <span className="font-medium text-slate-600">
-                      Higher bands:{" "}
-                    </span>
-                    <span className="font-semibold text-blue-700">{higherBands}</span>
-                  </span>
-                </div>
-              </>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mockProperties.map((row, index) => (
+                      <tr
+                        key={`${row.address}-${index}`}
+                        className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
+                      >
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          {row.address}
+                        </td>
+                        <td className="px-4 py-3 text-sm tabular-nums text-gray-500">
+                          {formatDistanceMiles(row.distanceMiles)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={bandBadgeClass(row.band, userBand)}>
+                            {row.band}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={userBandBadgeClass()}>
+                            {userBand}
+                          </span>
+                        </td>
+                        <td className={`px-4 py-3 text-sm tabular-nums ${bandDifferenceTone(row.band, userBand)}`}>
+                          {bandDifferenceLabel(row.band, userBand)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
-              <div className="px-6 py-12 text-center sm:px-10">
-                <p className="text-base font-medium text-slate-900">
-                  No comparable properties found in your band area
+              <div className="px-6 py-12 text-center">
+                <p className="text-sm font-medium text-gray-900">
+                  No comparable properties found in your area
                 </p>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Try another postcode or check back later — we update our data
-                  regularly.
+                <p className="mt-2 text-sm text-gray-500">
+                  Try another postcode or check back later.
                 </p>
               </div>
             )}
           </div>
 
+          {/* Summary cards */}
           {hasComparable ? (
-            <div className="bandcheck-animate-cta mt-10 space-y-4">
-              <p className="text-center text-sm leading-relaxed text-slate-600">
-                This suggests you may be eligible to reduce your council tax.
-              </p>
-              <Link
-                href={summaryHref}
-                className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Start Your Appeal →
-              </Link>
-              <p className="text-center">
-                <Link
-                  href={resultsHref}
-                  className="text-sm font-medium text-[#2563EB] underline-offset-4 transition hover:text-blue-800 hover:underline"
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: "Lower Bands", value: lowerBands, color: "text-green-600" },
+                { label: "Same Band",   value: sameBand,   color: "text-gray-700" },
+                { label: "Higher Bands",value: higherBands,color: "text-red-500"  },
+              ].map(({ label, value, color }) => (
+                <div
+                  key={label}
+                  className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm"
                 >
-                  ← Back
-                </Link>
-              </p>
+                  <p className={`text-lg font-semibold ${color}`}>{value}</p>
+                  <p className="mt-1 text-xs text-gray-500">{label}</p>
+                </div>
+              ))}
             </div>
+          ) : null}
+
+          {/* CTA */}
+          {hasComparable ? (
+            <Link
+              href={summaryHref}
+              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Start Your Appeal →
+            </Link>
           ) : (
-            <div className="mt-10 text-center">
-              <Link
-                href={resultsHref}
-                className="text-sm font-medium text-[#2563EB] underline-offset-4 transition hover:text-blue-800 hover:underline"
-              >
-                ← Back to results
-              </Link>
-            </div>
+            <Link
+              href={resultsHref}
+              className="text-sm text-gray-600 underline-offset-4 transition hover:text-gray-900 hover:underline"
+            >
+              ← Back to results
+            </Link>
           )}
+
         </div>
       </main>
     </div>
