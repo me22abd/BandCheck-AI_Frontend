@@ -179,91 +179,94 @@ export default async function SummaryPage({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-12 text-gray-900">
-        <div className="mb-6">
-          <Link
-            href={compareHref}
-            className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-          >
-            ← Back
-          </Link>
-        </div>
+      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+        <div className="space-y-6">
 
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Your Case Summary
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">{formatted}</p>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto]">
-          {/* Key points */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <ul className="space-y-3">
-              {keyPoints.map((point) => (
-                <li key={point} className="flex items-center gap-3">
-                  {CHECK_ICON}
-                  <span className="text-sm text-gray-700">{point}</span>
-                </li>
-              ))}
-            </ul>
+          {/* Back + title */}
+          <div>
+            <Link
+              href={compareHref}
+              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+            >
+              ← Back
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+              Your Case Summary
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">{formatted}</p>
           </div>
 
-          {/* Case strength */}
-          <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:min-w-[200px]">
-            <p className="mb-2 text-sm font-semibold text-gray-700">
-              Case Strength
-            </p>
-            <CaseStrengthGauge score={score} />
-            <p className={`mt-3 text-sm font-semibold ${labelColor}`}>
-              {label}
-            </p>
-          </div>
-        </div>
+          {/* Key points + case strength */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Key points — spans 2 cols */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:col-span-2">
+              <ul className="space-y-3">
+                {keyPoints.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    {CHECK_ICON}
+                    <span className="text-sm text-gray-700">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-        {/* Potential savings */}
-        <div className="mt-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">
-            Potential Savings
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            If your band is reduced from Band {userBand} to a lower band
-          </p>
-          <div className="mt-4 grid grid-cols-3 gap-3 sm:gap-4">
-            {[
-              { amount: "£361", period: "Saved per year" },
-              { amount: "£1,805", period: "Over 5 years" },
-              { amount: "£3,610+", period: "Over 10 years" },
-            ].map(({ amount, period }) => (
-              <div
-                key={period}
-                className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center"
-              >
-                <p className="text-lg font-bold text-blue-600 sm:text-xl">
-                  {amount}
-                </p>
-                <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                  {period}
-                </p>
+            {/* Case strength — 1 col */}
+            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
+              <p className="text-sm font-semibold text-gray-700">
+                Case Strength
+              </p>
+              <div className="mt-3">
+                <CaseStrengthGauge score={score} />
               </div>
-            ))}
+              <p className={`mt-3 text-sm font-medium ${labelColor}`}>
+                {label}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <div className="mt-6">
+          {/* Potential savings */}
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Potential Savings
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              If your band is reduced from Band {userBand} to a lower band
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {[
+                { amount: "£361", period: "Saved per year" },
+                { amount: "£1,805", period: "Over 5 years" },
+                { amount: "£3,610+", period: "Over 10 years" },
+              ].map(({ amount, period }) => (
+                <div
+                  key={period}
+                  className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm"
+                >
+                  <p className="text-lg font-semibold text-blue-600">
+                    {amount}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">{period}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
           <Link
             href={appealHref}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Continue to Appeal →
           </Link>
-        </div>
 
-        <p className="mt-4 text-center text-xs leading-relaxed text-gray-400">
-          Savings figures are estimates based on average band reductions.
-          Actual savings depend on your local authority.
-        </p>
+          <p className="text-center text-xs leading-relaxed text-gray-400">
+            Savings figures are estimates based on average band reductions.
+            Actual savings depend on your local authority.
+          </p>
+
+        </div>
       </main>
     </div>
   );
