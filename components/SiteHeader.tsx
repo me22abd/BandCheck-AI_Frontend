@@ -1,19 +1,45 @@
 import Link from "next/link";
-import Image from "next/image";
+
+function BandCheckLogo() {
+  return (
+    <span className="flex items-center gap-2">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        aria-hidden
+        className="shrink-0"
+      >
+        <path
+          d="M10 1.5L2.5 4.5V10C2.5 14 5.8 17.6 10 18.5C14.2 17.6 17.5 14 17.5 10V4.5L10 1.5Z"
+          stroke="#2563EB"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          fill="#EFF6FF"
+        />
+        <path
+          d="M7 10.5L9 12.5L13 8.5"
+          stroke="#2563EB"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="tracking-tight">
+        <span className="text-lg font-semibold text-gray-900">BandCheck</span>
+        <span className="text-lg font-semibold text-blue-600"> AI</span>
+      </span>
+    </span>
+  );
+}
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex shrink-0 items-center gap-8">
-          <Image
-            src="/logo.png"
-            alt="BandCheck AI"
-            width={160}
-            height={40}
-            className="h-8 w-auto sm:h-10"
-            priority
-          />
+        <Link href="/" className="flex shrink-0 items-center">
+          <BandCheckLogo />
         </Link>
 
         <div className="flex items-center gap-8">
