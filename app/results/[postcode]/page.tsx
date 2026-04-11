@@ -246,7 +246,7 @@ export default async function ResultsPage({
               View Full Breakdown →
             </Link>
             <Link
-              href={`/appeal/start?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
+              href={`/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
               className="flex min-h-14 w-full items-center justify-center rounded-xl border-2 border-blue-600 bg-white px-8 text-lg font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Start Appeal

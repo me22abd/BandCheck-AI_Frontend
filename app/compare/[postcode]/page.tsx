@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { baseUrl } from "@/lib/apiBaseUrl";
-import { councilTaxBandIndex } from "@/lib/scoring";
+import { councilTaxBandIndex, isBandLowerThan } from "@/lib/scoring";
 
 type CheckResponse = {
   userBand: string;
@@ -114,6 +114,13 @@ export default async function ComparePage({
     else if (pi === userIdx) sameBand += 1;
     else higherBands += 1;
   }
+
+  const appealComparables = mockProperties
+    .filter((p) => isBandLowerThan(p.band, userBand))
+    .slice(0, 5)
+    .map((p) => ({ address: p.address, band: p.band }));
+  const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
+  const appealEmailHref = `/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
@@ -234,7 +241,7 @@ export default async function ComparePage({
                 This suggests you may be eligible to reduce your council tax.
               </p>
               <Link
-                href="/appeal"
+                href={appealEmailHref}
                 className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Start Your Appeal →
