@@ -1,19 +1,19 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#2563EB] text-sm font-bold text-white shadow-sm"
-            aria-hidden
-          >
-            BC
-          </span>
-          <span className="text-lg font-semibold tracking-tight text-gray-900">
-            BandCheck AI
-          </span>
+        <Link href="/" className="flex shrink-0 items-center gap-8">
+          <Image
+            src="/logo.png"
+            alt="BandCheck AI"
+            width={160}
+            height={40}
+            className="h-8 w-auto sm:h-10"
+            priority
+          />
         </Link>
 
         <div className="flex items-center gap-8">
