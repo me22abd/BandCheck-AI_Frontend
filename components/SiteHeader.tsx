@@ -50,15 +50,15 @@ export function SiteHeader() {
             className="hidden items-center gap-8 text-sm font-medium lg:flex"
             aria-label="Marketing"
           >
-            <span className="cursor-default text-gray-600 transition-colors duration-200 hover:text-gray-900">
+            <a href="/#how-it-works" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
               How it works
-            </span>
-            <span className="cursor-default text-gray-600 transition-colors duration-200 hover:text-gray-900">
+            </a>
+            <a href="/#about" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
               About
-            </span>
-            <span className="cursor-default text-gray-600 transition-colors duration-200 hover:text-gray-900">
+            </a>
+            <a href="/#pricing" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
               Pricing
-            </span>
+            </a>
             <span className="cursor-default text-gray-600 transition-colors duration-200 hover:text-gray-900">
               Login
             </span>

@@ -78,7 +78,7 @@ export default function Home() {
             </span>
           </div>
 
-          <section className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
+          <section id="how-it-works" className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
             <h2 className="text-center text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
               How it works
             </h2>
@@ -116,6 +116,40 @@ export default function Home() {
                   If you have a strong case, begin your appeal in minutes.
                 </p>
               </div>
+            </div>
+          </section>
+
+          <section id="about" className="mx-auto mt-20 w-full max-w-4xl text-center">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              About BandCheck AI
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-gray-600">
+              We help homeowners identify whether they are overpaying council tax
+              by comparing their property with nearby homes. Our platform provides
+              clear, structured insights and guides users through the appeal process
+              with confidence.
+            </p>
+          </section>
+
+          <section id="pricing" className="mx-auto mt-20 w-full max-w-4xl text-center">
+            <h2 className="text-2xl font-semibold text-gray-900">Pricing</h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-gray-600">
+              No upfront cost. You only pay if your appeal is successful — we take
+              a small percentage of the savings.
+            </p>
+            <div className="mx-auto mt-8 flex max-w-lg flex-col gap-3 text-left">
+              {[
+                "No upfront cost — start your check for free",
+                "Only pay if your appeal is successful",
+                "We take a small percentage of your savings",
+              ].map((line) => (
+                <div key={line} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs font-bold">
+                    ✓
+                  </span>
+                  <span className="text-sm text-gray-700">{line}</span>
+                </div>
+              ))}
             </div>
           </section>
         </div>
