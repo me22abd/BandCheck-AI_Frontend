@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Search, FileText, Home, Lock, TrendingUp, BarChart2 } from "lucide-react";
 
 function BandCheckLogo() {
   return (
@@ -145,66 +146,42 @@ function AboutPanel() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {[
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-              </svg>
-            ),
+            icon: <Search className="h-5 w-5 text-gray-600" />,
             title: "Instant analysis",
             body: "Enter your postcode and see results in seconds, powered by real property data.",
           },
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M3 3h18v18H3z" rx="2" /><path d="M3 9h18M9 21V9" />
-              </svg>
-            ),
+            icon: <BarChart2 className="h-5 w-5 text-gray-600" />,
             title: "Clear comparisons",
             body: "Side-by-side band comparison with nearby similar properties — easy to understand.",
           },
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="13" y2="17" />
-              </svg>
-            ),
+            icon: <FileText className="h-5 w-5 text-gray-600" />,
             title: "Appeal pack",
             body: "We generate a structured appeal document ready for the Valuation Office Agency.",
           },
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-            ),
+            icon: <Lock className="h-5 w-5 text-gray-600" />,
             title: "Privacy first",
             body: "Your email and property details are never sold or shared with third parties.",
           },
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <circle cx="12" cy="12" r="9" /><path d="M14.5 9a3 3 0 0 0-5 2.2c0 2.4 5 5.8 5 5.8s5-3.4 5-5.8" /><path d="M9 15h6" />
-              </svg>
-            ),
+            icon: <TrendingUp className="h-5 w-5 text-gray-600" />,
             title: "No win, no fee",
             body: "You never pay upfront. We only earn when your appeal succeeds.",
           },
           {
-            icon: (
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            ),
+            icon: <Home className="h-5 w-5 text-gray-600" />,
             title: "Real data",
             body: "Comparable property data is sourced from publicly available council tax records.",
           },
         ].map(({ icon, title, body }) => (
           <div key={title} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600" aria-hidden>
+            <div className="flex items-center gap-3">
               {icon}
+              <p className="text-sm font-semibold text-gray-900">{title}</p>
             </div>
-            <p className="mt-3 text-sm font-semibold text-gray-900">{title}</p>
-            <p className="mt-1 text-xs leading-relaxed text-gray-600">{body}</p>
+            <p className="mt-2 text-xs leading-relaxed text-gray-600">{body}</p>
           </div>
         ))}
       </div>
