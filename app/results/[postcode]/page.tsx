@@ -83,8 +83,6 @@ export default async function ResultsPage({
 }: {
   params: Promise<{ postcode: string }>;
 }) {
-  console.log("API BASE URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
-
   const { postcode: postcodeParam } = await params;
   const decodedPostcode = decodeURIComponent(postcodeParam);
   const compact = decodedPostcode.replace(/\s+/g, "").toUpperCase();
@@ -116,17 +114,17 @@ export default async function ResultsPage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <SiteHeader />
-        <main className="px-6 py-16 text-slate-900 sm:py-20">
+        <main className="px-6 py-16 text-gray-900 sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
-            <p className="text-base text-slate-700">
+            <p className="text-base text-gray-700">
               We couldn&apos;t analyze this postcode right now. Please try again.
             </p>
             <p className="mt-6">
               <Link
                 href="/"
-                className="text-sm font-medium text-[#2563EB] underline-offset-4 transition hover:text-blue-800 hover:underline"
+                className="text-sm font-medium text-gray-600 underline-offset-4 transition hover:text-gray-900 hover:underline"
               >
                 ← Back
               </Link>
@@ -153,124 +151,101 @@ export default async function ResultsPage({
   const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <SiteHeader />
-      <main className="px-6 py-10 pb-16 text-slate-900 sm:py-12">
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="text-center">
-            <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
-              Results for
-            </p>
-            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-              {formatted}
+      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+        <div className="space-y-6">
+
+          {/* Header */}
+          <div>
+            <Link
+              href="/"
+              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+            >
+              ← Back
+            </Link>
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+              Results for {formatted}
             </h1>
-            <p className="mt-2">
-              <Link
-                href="/"
-                className="text-sm font-medium text-[#2563EB] hover:text-blue-800 hover:underline"
-              >
+            <p className="mt-1 text-sm text-gray-500">
+              <Link href="/" className="text-blue-600 hover:text-blue-800 hover:underline">
                 Edit postcode
               </Link>
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-lg shadow-slate-200/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xl">
-              <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+          {/* Stat cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Your council tax band
               </p>
               <div className="mt-4 flex justify-center">
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-blue-100 text-5xl font-extrabold text-blue-700 shadow-inner ring-4 ring-blue-50 sm:h-32 sm:w-32 sm:text-6xl">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-4xl font-bold text-blue-600 ring-4 ring-blue-100">
                   {userBand}
                 </div>
               </div>
-              <p className="mt-5 text-center text-xs font-medium uppercase tracking-wide text-slate-500">
-                Annual cost (approx.)
-              </p>
-              <p className="mt-1 text-center text-sm text-gray-600">
+              <p className="mt-4 text-xs text-gray-500">
                 Varies by local authority — check your bill
               </p>
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-xl shadow-slate-200/60 ring-1 ring-blue-100/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-2xl">
-              <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Case strength
               </p>
               <div className="mt-2">
                 <CaseStrengthGauge score={score} />
               </div>
-              <p className="mt-3 text-center text-sm font-semibold text-green-800">
-                {label}
-              </p>
+              <p className="mt-2 text-sm font-semibold text-green-700">{label}</p>
               {lowConfidence ? (
-                <p className="mt-2 text-center text-xs leading-relaxed text-green-800/80">
+                <p className="mt-1 text-xs text-gray-500">
                   Limited data — confidence may be lower
                 </p>
               ) : null}
             </div>
 
-            <div className="rounded-2xl border border-gray-100 bg-white p-7 shadow-lg shadow-slate-200/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xl">
-              <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Nearby homes
               </p>
-              <p className="mt-4 text-center text-lg font-semibold text-slate-900">
+              <p className="mt-4 text-lg font-semibold text-gray-900">
                 {nearbyHomesSummary}
               </p>
-              <p className="mt-3 text-center text-sm leading-relaxed text-slate-600">
-                {lowerCount} of {totalNearby} similar properties in this sample are
-                in a lower band
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                {lowerCount} of {totalNearby} nearby properties are in a lower band
               </p>
             </div>
           </div>
 
-          <div className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/90 px-6 py-6 shadow-lg shadow-amber-100/60 backdrop-blur-sm sm:px-8 sm:py-7">
-            <p className="text-center text-lg font-semibold text-amber-950 sm:text-xl">
-              <span aria-hidden>⚠️ </span>
-              You may be overpaying. Our analysis suggests you could have a strong
-              chance of success.
-            </p>
-            <p className="mt-3 text-center text-sm leading-relaxed text-amber-900/95">
+          {/* Insight banner */}
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-6 py-5">
+            <p className="text-sm font-semibold text-blue-900">
               {microProof}
             </p>
-            <p className="mt-3 text-center text-sm leading-relaxed text-amber-900/85">
-              This is based on nearby properties with lower council tax bands than
-              yours.
+            <p className="mt-1 text-sm text-blue-800/80">
+              You may be overpaying. Our analysis suggests you could have a strong case for appeal.
             </p>
           </div>
 
-          <div className="bandcheck-animate-cta mt-10 space-y-4">
-            <Link
-              href={`/compare/${encodeURIComponent(pathPostcode)}`}
-              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              View Full Breakdown →
-            </Link>
-            <Link
-              href={`/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
-              className="flex min-h-14 w-full items-center justify-center rounded-xl border-2 border-blue-600 bg-white px-8 text-lg font-semibold text-blue-600 shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Start Appeal
-            </Link>
-            <p className="text-center">
-              <Link
-                href="/"
-                className="text-sm font-medium text-[#2563EB] underline-offset-4 transition hover:text-blue-800 hover:underline"
-              >
-                ← Back
-              </Link>
-            </p>
-          </div>
+          {/* CTAs */}
+          <Link
+            href={`/compare/${encodeURIComponent(pathPostcode)}`}
+            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            View Full Breakdown →
+          </Link>
+          <Link
+            href={`/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
+            className="flex min-h-14 w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-8 text-lg font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Start Appeal
+          </Link>
 
-          <div className="mx-auto mt-12 max-w-2xl space-y-3 text-center text-xs leading-relaxed text-slate-500">
-            <p>
-              Nearby properties are based on real postcode data. Council tax bands
-              are estimated for demonstration.
-            </p>
-            <p>
-              Results are based on available nearby property data and should be used
-              as a guide.
-            </p>
-          </div>
+          <p className="text-center text-xs leading-relaxed text-gray-400">
+            Nearby properties are based on real postcode data. Results should be used as a guide only.
+          </p>
+
         </div>
       </main>
     </div>

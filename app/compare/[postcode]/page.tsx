@@ -204,7 +204,7 @@ export default async function ComparePage({
 
           {/* Summary cards */}
           {hasComparable ? (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {[
                 { label: "Lower Bands", value: lowerBands, color: "text-green-600" },
                 { label: "Same Band",   value: sameBand,   color: "text-gray-700" },

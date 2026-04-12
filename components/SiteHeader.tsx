@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 function BandCheckLogo() {
   return (
@@ -34,7 +37,15 @@ function BandCheckLogo() {
   );
 }
 
+const NAV_LINKS = [
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "About", href: "/#about" },
+  { label: "Pricing", href: "/#pricing" },
+];
+
 export function SiteHeader() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -46,31 +57,80 @@ export function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-6">
+          {/* Desktop nav */}
           <nav
             className="hidden items-center gap-8 text-sm font-medium lg:flex"
             aria-label="Marketing"
           >
-            <a href="/#how-it-works" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
-              How it works
-            </a>
-            <a href="/#about" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
-              About
-            </a>
-            <a href="/#pricing" className="text-gray-600 transition-colors duration-200 hover:text-gray-900">
-              Pricing
-            </a>
-            <span className="cursor-default text-gray-600 transition-colors duration-200 hover:text-gray-900">
-              Login
-            </span>
+            {NAV_LINKS.map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                className="text-gray-600 transition-colors duration-200 hover:text-gray-900"
+              >
+                {label}
+              </a>
+            ))}
           </nav>
-          <Link
-            href="/"
+
+          <a
+            href="/appeal"
             className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Get Started
-          </Link>
+          </a>
+
+          {/* Hamburger — mobile only */}
+          <button
+            type="button"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 lg:hidden"
+          >
+            {mobileOpen ? (
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden>
+                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5" aria-hidden>
+                <path fillRule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Zm0 5.25a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75Z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <nav
+          className="border-t border-gray-100 bg-white px-6 pb-4 pt-3 lg:hidden"
+          aria-label="Mobile navigation"
+        >
+          <ul className="space-y-1">
+            {NAV_LINKS.map(({ label, href }) => (
+              <li key={label}>
+                <a
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                href="/appeal"
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                Get Started
+              </a>
+            </li>
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }

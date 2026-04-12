@@ -31,11 +31,12 @@ export default function Home() {
             Check if you&apos;re overpaying council tax
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg">
-            We compare your property with nearby homes to see if you have a strong
-            case for a lower band.
+            The average successful appeal saves £3,000+ in backdated refunds.
+            Check if you qualify in 30 seconds.
           </p>
 
           <form
+            id="postcode-input"
             onSubmit={handleSubmit}
             className="mx-auto mt-10 w-full max-w-xl"
           >
@@ -63,7 +64,11 @@ export default function Home() {
             </div>
           </form>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-gray-600">
+          <p className="mt-4 text-center text-sm text-gray-500">
+            Join 2,000+ homeowners checking their council tax band
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-gray-600">
             <span className="inline-flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" aria-hidden>
                 ✓
