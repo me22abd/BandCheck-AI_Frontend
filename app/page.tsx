@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { Search, FileText, Home as HomeIcon, Lock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 
 function normalizePostcode(raw: string): string {
@@ -156,9 +157,9 @@ export default function Home() {
               ].map((step) => (
                 <div
                   key={step.n}
-                  className="rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-lg shadow-slate-200/50 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xl"
+                  className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
                 >
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/30">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/30">
                     {step.n}
                   </div>
                   <p className="text-base font-semibold text-gray-900">
@@ -173,28 +174,28 @@ export default function Home() {
           </section>
 
           <section id="about" className="mx-auto mt-20 w-full max-w-4xl">
-            <div className="rounded-2xl border border-gray-100 bg-white p-8 text-left shadow-lg shadow-slate-200/40 sm:p-10">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm sm:p-8">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
                 About
               </p>
-              <h2 className="mt-2 text-xl font-bold text-gray-900 sm:text-2xl">
+              <h2 className="mt-2 text-xl font-semibold text-gray-900">
                 Built for UK homeowners
               </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
                 We help homeowners identify whether they are overpaying council
                 tax by comparing their property with nearby homes. Our platform
                 provides clear, structured insights and guides you through the
                 appeal process with confidence — no jargon, no solicitors needed.
               </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 {[
-                  { icon: "🔍", text: "Instant postcode analysis" },
-                  { icon: "📋", text: "Structured appeal pack generated for you" },
-                  { icon: "🏘️", text: "Real comparable property data" },
-                  { icon: "🔒", text: "Secure — your data is never shared" },
+                  { icon: <Search className="h-5 w-5 text-gray-600" />, text: "Instant postcode analysis" },
+                  { icon: <FileText className="h-5 w-5 text-gray-600" />, text: "Structured appeal pack generated for you" },
+                  { icon: <HomeIcon className="h-5 w-5 text-gray-600" />, text: "Real comparable property data" },
+                  { icon: <Lock className="h-5 w-5 text-gray-600" />, text: "Secure — your data is never shared" },
                 ].map(({ icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                    <span className="text-base" aria-hidden>{icon}</span>
+                  <div key={text} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                    {icon}
                     {text}
                   </div>
                 ))}
@@ -203,28 +204,28 @@ export default function Home() {
           </section>
 
           <section id="pricing" className="mx-auto mt-8 w-full max-w-4xl">
-            <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-blue-700 p-8 text-left shadow-xl shadow-blue-600/20 sm:p-10">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-200">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
                 Pricing
               </p>
-              <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl">
+              <h2 className="mt-2 text-xl font-semibold text-gray-900">
                 Free to check. Only pay if you save.
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-blue-100 sm:text-base">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-gray-600">
                 No upfront cost, no subscription. We take a small percentage of
                 the savings you receive — so we only win when you do.
               </p>
-              <div className="mt-6 flex flex-col gap-3">
+              <div className="mt-5 space-y-3">
                 {[
                   "Start your postcode check completely free",
                   "Only pay if your appeal is successful",
                   "We take a small percentage of your refund",
                 ].map((line) => (
-                  <div key={line} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white">
+                  <div key={line} className="flex items-center gap-3">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
                       ✓
                     </span>
-                    <span className="text-sm text-blue-50">{line}</span>
+                    <span className="text-sm text-gray-700">{line}</span>
                   </div>
                 ))}
               </div>

@@ -143,7 +143,7 @@ function AboutPanel() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {[
           {
             icon: <Search className="h-5 w-5 text-gray-600" />,
@@ -176,7 +176,7 @@ function AboutPanel() {
             body: "Comparable property data is sourced from publicly available council tax records.",
           },
         ].map(({ icon, title, body }) => (
-          <div key={title} className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div key={title} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <div className="flex items-center gap-3">
               {icon}
               <p className="text-sm font-semibold text-gray-900">{title}</p>
