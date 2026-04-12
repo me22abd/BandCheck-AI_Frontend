@@ -19,10 +19,12 @@ export function AppealEmailCaptureClient({ appealStartHref }: Props) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
     setEmail("");
     setLoading(false);
+    setConfirmed(false);
   }, [appealStartHref]);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -33,12 +35,10 @@ export function AppealEmailCaptureClient({ appealStartHref }: Props) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: email.trim() }),
-    }).catch(() => {
-      // Keep UX unchanged even if lead endpoint fails.
-    });
+    }).catch(() => {});
     window.setTimeout(() => {
       setLoading(false);
-      router.replace(appealStartHref);
+      setConfirmed(true);
     }, 500);
   }
 
@@ -48,6 +48,46 @@ export function AppealEmailCaptureClient({ appealStartHref }: Props) {
     } else {
       router.push("/");
     }
+  }
+
+  // Confirmation screen
+  if (confirmed) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <SiteHeader />
+        <main className="mx-auto max-w-lg px-6 py-24 text-center text-gray-900">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 text-green-600" aria-hidden>
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1 className="mt-6 text-2xl font-semibold text-gray-900">
+            We&apos;ll be in touch
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            Thanks — your details have been received. Our team will review your
+            case and email you within 24 hours with next steps.
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            Sent to <span className="font-medium text-gray-700">{email}</span>
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <a
+              href={appealStartHref}
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700"
+            >
+              Continue to Appeal Builder →
+            </a>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50"
+            >
+              Back to home
+            </a>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -117,7 +157,7 @@ export function AppealEmailCaptureClient({ appealStartHref }: Props) {
                   disabled={!email.trim() || loading}
                   className="mt-6 flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                 >
-                  {loading ? "Starting…" : "Continue to Appeal →"}
+                  {loading ? "Submitting…" : "Continue to Appeal →"}
                 </button>
                 <p className="mt-3 text-center text-sm font-medium text-slate-700 lg:text-left">
                   No upfront cost. Only pay if successful.

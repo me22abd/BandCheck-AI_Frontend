@@ -28,11 +28,13 @@ export default function Home() {
       <main className="relative flex flex-1 flex-col items-center justify-center px-6 pb-28 pt-12 sm:pb-36 sm:pt-16">
         <div className="relative z-10 w-full max-w-2xl text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl sm:leading-[1.1]">
-            Check if you&apos;re overpaying council tax
+            1 in 3 UK homes are in the wrong council tax band.{" "}
+            <span className="text-blue-600">Is yours one of them?</span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg">
             The average successful appeal saves £3,000+ in backdated refunds.
-            Check if you qualify in 30 seconds.
+            Find out if you&apos;re overpaying in 30 seconds — no paperwork, no
+            upfront cost.
           </p>
 
           <form

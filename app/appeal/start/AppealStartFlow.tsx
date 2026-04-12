@@ -762,12 +762,9 @@ export default function AppealStartFlow() {
                   </a>
                 </div>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <div className="mt-6 flex justify-center">
                   <Link href="/" className={`${secondaryBtnClass} text-center`}>
-                    ← Start over
-                  </Link>
-                  <Link href="/" className={`${primaryBtnClass} text-center`}>
-                    Finish
+                    ← Back to home
                   </Link>
                 </div>
               </div>
