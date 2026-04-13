@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { Search, FileText, Home as HomeIcon, Lock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 
 function normalizePostcode(raw: string): string {
@@ -86,151 +85,55 @@ export default function Home() {
             </span>
           </div>
 
-          <section id="how-it-works" className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
-            <h2 className="text-center text-xl font-extrabold tracking-tight text-gray-900 sm:text-2xl">
-              How it works
-            </h2>
-
-            {/* Mobile: vertical step list with connector line */}
-            <div className="mt-8 flex flex-col gap-0 sm:hidden">
-              {[
-                {
-                  n: "1",
-                  title: "Enter postcode",
-                  body: "We validate your postcode and find nearby comparable homes.",
-                  icon: "🏠",
-                },
-                {
-                  n: "2",
-                  title: "Compare bands",
-                  body: "See how your band compares against similar properties nearby.",
-                  icon: "📊",
-                },
-                {
-                  n: "3",
-                  title: "Start appeal",
-                  body: "If you have a strong case, begin your appeal in minutes.",
-                  icon: "✅",
-                },
-              ].map((step, i, arr) => (
-                <div key={step.n} className="flex gap-4">
-                  {/* Left: number + connector */}
-                  <div className="flex flex-col items-center">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-md shadow-blue-600/30">
-                      {step.n}
-                    </div>
-                    {i < arr.length - 1 && (
-                      <div className="mt-1 w-0.5 flex-1 bg-gradient-to-b from-blue-300 to-blue-100" style={{ minHeight: "2.5rem" }} />
-                    )}
-                  </div>
-                  {/* Right: content */}
-                  <div className={`flex-1 pb-6 text-left${i === arr.length - 1 ? "" : ""}`}>
-                    <p className="text-base font-semibold text-gray-900">
-                      {step.title}
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                      {step.body}
-                    </p>
-                  </div>
-                </div>
-              ))}
+          {/* How it works — preview */}
+          <section className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">How it works</h2>
+              <a href="/how-it-works" className="text-sm font-medium text-blue-600 hover:text-blue-800">
+                Learn more →
+              </a>
             </div>
-
-            {/* Desktop: 3-column card grid */}
-            <div className="mt-8 hidden gap-4 sm:grid sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3">
               {[
-                {
-                  n: "1",
-                  title: "Enter postcode",
-                  body: "We validate your postcode and find nearby comparable homes.",
-                },
-                {
-                  n: "2",
-                  title: "Compare bands",
-                  body: "See how your band compares against similar properties nearby.",
-                },
-                {
-                  n: "3",
-                  title: "Start appeal",
-                  body: "If you have a strong case, begin your appeal in minutes.",
-                },
+                { n: "1", title: "Enter postcode", body: "We find your band and pull nearby comparable properties instantly." },
+                { n: "2", title: "Compare bands", body: "See which nearby homes pay less and get a case strength score." },
+                { n: "3", title: "Start appeal", body: "Answer a few questions — we generate a complete appeal pack." },
               ].map((step) => (
-                <div
-                  key={step.n}
-                  className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md"
-                >
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/30">
+                <div key={step.n} className="rounded-xl border border-gray-200 bg-white p-5 text-left shadow-sm">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
                     {step.n}
                   </div>
-                  <p className="text-base font-semibold text-gray-900">
-                    {step.title}
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                    {step.body}
-                  </p>
+                  <p className="text-sm font-semibold text-gray-900">{step.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{step.body}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section id="about" className="mx-auto mt-20 w-full max-w-4xl">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm sm:p-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
-                About
+          {/* About + Pricing — side by side previews */}
+          <div className="mx-auto mt-8 grid w-full max-w-4xl gap-4 sm:grid-cols-2">
+            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">About</p>
+              <h2 className="mt-2 text-base font-semibold text-gray-900">Built for UK homeowners</h2>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                We simplify the council tax appeal process using real property data — no jargon, no solicitors, no upfront cost.
               </p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900">
-                Built for UK homeowners
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-gray-600">
-                We help homeowners identify whether they are overpaying council
-                tax by comparing their property with nearby homes. Our platform
-                provides clear, structured insights and guides you through the
-                appeal process with confidence — no jargon, no solicitors needed.
-              </p>
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                {[
-                  { icon: <Search className="h-5 w-5 text-gray-600" />, text: "Instant postcode analysis" },
-                  { icon: <FileText className="h-5 w-5 text-gray-600" />, text: "Structured appeal pack generated for you" },
-                  { icon: <HomeIcon className="h-5 w-5 text-gray-600" />, text: "Real comparable property data" },
-                  { icon: <Lock className="h-5 w-5 text-gray-600" />, text: "Secure — your data is never shared" },
-                ].map(({ icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                    {icon}
-                    {text}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+              <a href="/about" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                Learn about us →
+              </a>
+            </section>
 
-          <section id="pricing" className="mx-auto mt-8 w-full max-w-4xl">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 text-left shadow-sm sm:p-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
-                Pricing
+            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">Pricing</p>
+              <h2 className="mt-2 text-base font-semibold text-gray-900">Free to check. Only pay if you save.</h2>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                No subscription, no upfront cost. We take a small percentage of your savings — only if your appeal succeeds.
               </p>
-              <h2 className="mt-2 text-xl font-semibold text-gray-900">
-                Free to check. Only pay if you save.
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-gray-600">
-                No upfront cost, no subscription. We take a small percentage of
-                the savings you receive — so we only win when you do.
-              </p>
-              <div className="mt-5 space-y-3">
-                {[
-                  "Start your postcode check completely free",
-                  "Only pay if your appeal is successful",
-                  "We take a small percentage of your refund",
-                ].map((line) => (
-                  <div key={line} className="flex items-center gap-3">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
-                      ✓
-                    </span>
-                    <span className="text-sm text-gray-700">{line}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
+              <a href="/pricing" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+                See pricing details →
+              </a>
+            </section>
+          </div>
         </div>
 
         <div
