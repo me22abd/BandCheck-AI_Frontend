@@ -189,7 +189,7 @@ export default function AboutPage() {
               href="/"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700"
             >
-              Start free check <ArrowRight className="h-4 w-4" />
+              Start Free Check <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/how-it-works"

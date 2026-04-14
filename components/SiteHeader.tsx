@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 function BandCheckLogo() {
@@ -45,6 +46,7 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
@@ -66,7 +68,11 @@ export function SiteHeader() {
               <Link
                 key={label}
                 href={href}
-                className="text-gray-600 transition-colors duration-200 hover:text-gray-900"
+                className={`transition-colors duration-200 ${
+                  pathname === href
+                    ? "text-gray-900"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
               >
                 {label}
               </Link>
@@ -113,7 +119,11 @@ export function SiteHeader() {
                 <Link
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                  className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    pathname === href
+                      ? "bg-gray-100 text-gray-900"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
                 >
                   {label}
                 </Link>

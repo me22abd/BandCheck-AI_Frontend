@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -89,9 +90,9 @@ export default function Home() {
           <section className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">How it works</h2>
-              <a href="/how-it-works" className="text-sm font-medium text-blue-600 hover:text-blue-800">
+              <Link href="/how-it-works" className="text-sm font-medium text-blue-600 hover:text-blue-800">
                 Learn more →
-              </a>
+              </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {[
@@ -118,9 +119,9 @@ export default function Home() {
               <p className="mt-2 text-sm leading-relaxed text-gray-600">
                 We simplify the council tax appeal process using real property data — no jargon, no solicitors, no upfront cost.
               </p>
-              <a href="/about" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+              <Link href="/about" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                 Learn about us →
-              </a>
+              </Link>
             </section>
 
             <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -129,9 +130,9 @@ export default function Home() {
               <p className="mt-2 text-sm leading-relaxed text-gray-600">
                 No subscription, no upfront cost. We take a small percentage of your savings — only if your appeal succeeds.
               </p>
-              <a href="/pricing" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+              <Link href="/pricing" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                 See pricing details →
-              </a>
+              </Link>
             </section>
           </div>
         </div>
