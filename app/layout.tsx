@@ -1,32 +1,35 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
+import { GeistMono, GeistSans } from "geist/font";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
-const inter = Inter({
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "BandCheck AI",
-    template: "%s | BandCheck AI",
+    default: "Bandcheck ai",
+    template: "%s | Bandcheck ai",
   },
   description:
     "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
-  metadataBase: new URL("https://bandcheck-ai-frontend.vercel.app"),
+  metadataBase: new URL("https://www.bandcheckai.co.uk"),
   openGraph: {
-    title: "BandCheck AI",
+    title: "Bandcheck ai",
     description:
       "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
     type: "website",
-    siteName: "BandCheck AI",
+    siteName: "Bandcheck ai",
   },
   twitter: {
     card: "summary_large_image",
-    title: "BandCheck AI",
+    title: "Bandcheck ai",
     description:
       "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
   },
@@ -38,8 +41,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen font-sans antialiased bg-gray-50 text-gray-900">
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable}`}
+    >
+      <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <div className="animate-page-enter flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>
           <SiteFooter />

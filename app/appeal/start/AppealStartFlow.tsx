@@ -59,18 +59,18 @@ const STEP_COPY: Record<
 };
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  "w-full rounded-xl border border-hairline bg-paper-card px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-accent/30";
 
-const labelClass = "text-sm font-medium text-gray-700 mb-1 block";
+const labelClass = "text-sm font-medium text-ink-2 mb-1 block";
 
 const sectionBlockClass =
-  "border border-gray-200 rounded-lg bg-gray-50 p-4 mb-4";
+  "border border-hairline rounded-editorial bg-paper-card p-4 mb-4";
 
 const primaryBtnClass =
-  "inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-blue-700 hover:-translate-y-[1px] disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl bg-accent px-6 py-2 text-sm font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep disabled:pointer-events-none disabled:opacity-50";
 
 const secondaryBtnClass =
-  "inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-xl border border-hairline bg-paper-card px-6 py-2 text-sm font-semibold text-ink transition-all hover:bg-paper-2/50 disabled:pointer-events-none disabled:opacity-50";
 
 function parseComparablesParam(raw: string | null): AppealComparableRow[] {
   if (!raw?.trim()) return [];
@@ -122,7 +122,7 @@ function togglePillClass(active: boolean) {
     "rounded-md px-4 py-2 text-sm font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1";
   return active
     ? `${base} bg-blue-600 text-white shadow-sm`
-    : `${base} border border-gray-300 bg-white text-gray-700 hover:bg-gray-100`;
+    : `${base} border border-gray-300 bg-white text-ink-2 hover:bg-gray-100`;
 }
 
 export default function AppealStartFlow() {
@@ -197,9 +197,9 @@ export default function AppealStartFlow() {
   const copy = STEP_COPY[step] ?? STEP_COPY[1];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-6 py-10 text-gray-900">
+      <main className="mx-auto max-w-3xl px-6 py-10 text-ink">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
           <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 border-b border-gray-200 pb-4">
             <div className="justify-self-start">
@@ -231,9 +231,9 @@ export default function AppealStartFlow() {
                   <span
                     className={
                       n === step
-                        ? "font-semibold text-blue-600"
+                        ? "font-semibold text-accent"
                         : n < step
-                          ? "font-medium text-gray-500"
+                          ? "font-medium text-ink-3"
                           : "font-medium text-gray-400"
                     }
                   >
@@ -246,10 +246,10 @@ export default function AppealStartFlow() {
           </div>
 
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-ink">
               {copy.title}
             </h1>
-            <p className="mt-1 text-sm text-gray-600">{copy.subtitle}</p>
+            <p className="mt-1 text-sm text-ink-2">{copy.subtitle}</p>
           </div>
 
           <div className="mt-6">
@@ -257,26 +257,26 @@ export default function AppealStartFlow() {
               <div>
                 <div className={sectionBlockClass}>
                   <div className="mb-1 flex items-start justify-between gap-3">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-ink-2">
                       Property address
                     </span>
                     {hasResultsContext ? (
                       <Link
                         href={resultsEditHref}
-                        className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-800"
+                        className="shrink-0 text-sm font-medium text-accent hover:text-blue-800"
                       >
                         Edit
                       </Link>
                     ) : null}
                   </div>
                   {hasResultsContext ? (
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-ink">
                       {formattedPostcode}
-                      <span className="text-gray-500"> · </span>
+                      <span className="text-ink-3"> · </span>
                       Band {resultsBand}
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-ink-2">
                       Run a postcode check from the home page to attach your
                       postcode and band to this appeal.
                     </p>
@@ -284,7 +284,7 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <p className="mb-3 text-sm font-medium text-gray-900">
+                  <p className="mb-3 text-sm font-medium text-ink">
                     Property classification
                   </p>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -391,7 +391,7 @@ export default function AppealStartFlow() {
             {step === 2 ? (
               <div>
                 <div className={sectionBlockClass}>
-                  <p className="mb-3 text-sm text-gray-600">
+                  <p className="mb-3 text-sm text-ink-2">
                     {evidenceCompleted} of 5 completed
                   </p>
                   <ul className="space-y-3">
@@ -414,7 +414,7 @@ export default function AppealStartFlow() {
                               [key]: e.target.checked,
                             }))
                           }
-                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-accent focus:ring-blue-500"
                         />
                         <label
                           htmlFor={key}
@@ -459,31 +459,31 @@ export default function AppealStartFlow() {
             {step === 3 ? (
               <div>
                 <div className={sectionBlockClass}>
-                  <p className="mb-3 text-sm font-semibold text-gray-900">
+                  <p className="mb-3 text-sm font-semibold text-ink">
                     Property details
                   </p>
                   <dl className="space-y-2 text-sm text-gray-800">
                     <div className="flex justify-between gap-4">
-                      <dt className="text-gray-600">Type</dt>
+                      <dt className="text-ink-2">Type</dt>
                       <dd className="font-medium capitalize">
                         {property.propertyType || "—"}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-gray-600">Ownership</dt>
+                      <dt className="text-ink-2">Ownership</dt>
                       <dd className="font-medium capitalize">
                         {property.ownership || "—"}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-gray-600">Extensions</dt>
+                      <dt className="text-ink-2">Extensions</dt>
                       <dd className="font-medium capitalize">
                         {property.extensions || "—"}
                       </dd>
                     </div>
                     {property.notes.trim() ? (
                       <div>
-                        <dt className="text-gray-600">Notes</dt>
+                        <dt className="text-ink-2">Notes</dt>
                         <dd className="mt-1 whitespace-pre-wrap text-gray-800">
                           {property.notes}
                         </dd>
@@ -493,7 +493,7 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <p className="mb-3 text-sm font-semibold text-gray-900">
+                  <p className="mb-3 text-sm font-semibold text-ink">
                     Evidence checklist
                   </p>
                   <ul className="space-y-1 text-sm text-gray-800">
@@ -513,7 +513,7 @@ export default function AppealStartFlow() {
                       {evidence.extensionHistory ? "✓ Ready" : "○ Pending"}
                     </li>
                     {evidence.notes.trim() ? (
-                      <li className="pt-2 text-gray-600">
+                      <li className="pt-2 text-ink-2">
                         <span className="font-medium text-gray-800">Notes:</span>{" "}
                         {evidence.notes}
                       </li>
@@ -522,34 +522,34 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <p className="mb-3 text-sm font-semibold text-gray-900">
+                  <p className="mb-3 text-sm font-semibold text-ink">
                     Analysis from your check
                   </p>
                   {hasResultsContext ? (
                     <div className="space-y-2 text-sm text-gray-800">
                       <div className="flex justify-between gap-4">
-                        <dt className="text-gray-600">Postcode</dt>
+                        <dt className="text-ink-2">Postcode</dt>
                         <dd className="font-medium tabular-nums">
                           {formattedPostcode}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-4">
-                        <dt className="text-gray-600">Your band</dt>
+                        <dt className="text-ink-2">Your band</dt>
                         <dd className="font-medium">{resultsBand}</dd>
                       </div>
-                      <p className="text-gray-700">
+                      <p className="text-ink-2">
                         Based on your results, your property is Band {resultsBand}.
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-ink-2">
                       Open this guided flow from your results page after a postcode
                       check to include your postcode and band here.
                     </p>
                   )}
                   {hasComparables ? (
                     <div className="mt-4 border-t border-gray-200 pt-4">
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-ink-2">
                         These nearby properties are in a lower council tax band than
                         yours.
                       </p>
@@ -562,7 +562,7 @@ export default function AppealStartFlow() {
                             <span className="min-w-0 flex-1 text-gray-800">
                               {row.address}
                             </span>
-                            <span className="shrink-0 font-medium tabular-nums text-gray-900">
+                            <span className="shrink-0 font-medium tabular-nums text-ink">
                               {row.band}
                             </span>
                           </li>
@@ -570,7 +570,7 @@ export default function AppealStartFlow() {
                       </ul>
                     </div>
                   ) : hasResultsContext ? (
-                    <p className="mt-4 border-t border-gray-200 pt-4 text-sm text-gray-600">
+                    <p className="mt-4 border-t border-gray-200 pt-4 text-sm text-ink-2">
                       No comparable properties with lower bands were included in this
                       link.
                     </p>
@@ -592,13 +592,13 @@ export default function AppealStartFlow() {
             {step === 4 ? (
               <div>
                 <div className={sectionBlockClass}>
-                  <h2 className="text-base font-semibold text-gray-900">
+                  <h2 className="text-base font-semibold text-ink">
                     Council Tax Appeal Submission
                   </h2>
-                  <h3 className="mt-4 text-sm font-semibold text-gray-900">
+                  <h3 className="mt-4 text-sm font-semibold text-ink">
                     Section 1 — Property Summary
                   </h3>
-                  <dl className="mt-2 space-y-2 text-sm text-gray-600">
+                  <dl className="mt-2 space-y-2 text-sm text-ink-2">
                     <div className="flex flex-wrap justify-between gap-4">
                       <dt>Postcode</dt>
                       <dd className="font-medium text-gray-800 tabular-nums">
@@ -615,10 +615,10 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink">
                     Section 2 — Grounds for Appeal
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                  <p className="mt-2 text-sm leading-relaxed text-ink-2">
                     This appeal is submitted on the basis that the property&apos;s
                     council tax band may not reflect its value relative to similar
                     homes in the area. Where nearby comparable properties sit in a
@@ -628,14 +628,14 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink">
                     Section 3 — Comparable Properties
                   </h3>
                   {hasComparables ? (
                     <div className="mt-3 overflow-x-auto">
                       <table className="w-full min-w-[240px] border-collapse text-left text-sm text-gray-800">
                         <thead>
-                          <tr className="border-b border-gray-200 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          <tr className="border-b border-gray-200 text-xs font-semibold uppercase tracking-wide text-ink-3">
                             <th className="py-2 pr-4 font-semibold">Address</th>
                             <th className="py-2 font-semibold">Band</th>
                           </tr>
@@ -658,7 +658,7 @@ export default function AppealStartFlow() {
                       </table>
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-ink-2">
                       No comparable properties were included. Open Start Appeal from
                       your results after a postcode check to add them here.
                     </p>
@@ -666,21 +666,21 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink">
                     Why these properties were selected
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                  <p className="mt-2 text-sm leading-relaxed text-ink-2">
                     These properties were selected based on proximity to your postcode
                     and similarity in property type where available. Only properties
                     with lower council tax bands were included to support the appeal.
                   </p>
                   {hasComparables ? (
-                    <p className="mt-3 text-sm text-gray-600">
+                    <p className="mt-3 text-sm text-ink-2">
                       {comparables.length} comparable properties found within
                       approximately 1km radius
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm text-gray-600">
+                    <p className="mt-3 text-sm text-ink-2">
                       No suitable lower-band comparable properties were identified
                       within the selected radius.
                     </p>
@@ -688,15 +688,15 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink">
                     Section 4 — Supporting Notes
                   </h3>
                   {supportingNotesEmpty ? (
-                    <p className="mt-2 text-sm italic text-gray-600">
+                    <p className="mt-2 text-sm italic text-ink-2">
                       No additional notes were added in this session.
                     </p>
                   ) : (
-                    <div className="mt-2 space-y-3 text-sm leading-relaxed text-gray-600">
+                    <div className="mt-2 space-y-3 text-sm leading-relaxed text-ink-2">
                       {property.notes.trim() ? (
                         <div>
                           <p className="font-medium text-gray-800">
@@ -720,20 +720,20 @@ export default function AppealStartFlow() {
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-ink">
                     Section 5 — Data &amp; Methodology
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                  <p className="mt-2 text-sm leading-relaxed text-ink-2">
                     This assessment is based on nearby property comparisons and
                     available postcode data.
                   </p>
                 </div>
 
                 <div className={sectionBlockClass}>
-                  <h3 className="text-xs font-semibold text-gray-500">
+                  <h3 className="text-xs font-semibold text-ink-3">
                     Important Information
                   </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                  <p className="mt-2 text-xs leading-relaxed text-ink-3">
                     This document is provided for guidance purposes only and does not
                     constitute legal advice. While care has been taken to present
                     accurate and relevant information, users should verify all details
@@ -741,7 +741,7 @@ export default function AppealStartFlow() {
                   </p>
                 </div>
 
-                <p className="mb-4 text-center text-xs text-gray-500">
+                <p className="mb-4 text-center text-xs text-ink-3">
                   Generated by BandCheck AI on {generatedOn}
                 </p>
 
@@ -772,10 +772,10 @@ export default function AppealStartFlow() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-ink-3">
           <Link
             href={appealBackHref}
-            className="font-medium text-gray-500 underline-offset-4 transition-colors hover:text-gray-800 hover:underline"
+            className="font-medium text-ink-3 underline-offset-4 transition-colors hover:text-gray-800 hover:underline"
           >
             ← Back to appeal entry
           </Link>

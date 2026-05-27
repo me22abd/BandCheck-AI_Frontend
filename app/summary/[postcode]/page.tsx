@@ -46,10 +46,10 @@ function caseLabel(score: number, lowConfidence: boolean): string {
 }
 
 function caseLabelColor(score: number, lowConfidence: boolean): string {
-  if (lowConfidence) return "text-amber-600";
-  if (score >= 70) return "text-green-600";
-  if (score >= 40) return "text-blue-600";
-  return "text-slate-500";
+  if (lowConfidence) return "text-ink-3";
+  if (score >= 70) return "text-forest";
+  if (score >= 40) return "text-accent";
+  return "text-ink-3";
 }
 
 function CaseStrengthGauge({ score }: { score: number }) {
@@ -70,7 +70,7 @@ function CaseStrengthGauge({ score }: { score: number }) {
           cy="50"
           r={r}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="rgba(20, 18, 13, 0.12)"
           strokeWidth="7"
         />
         <circle
@@ -78,7 +78,7 @@ function CaseStrengthGauge({ score }: { score: number }) {
           cy="50"
           r={r}
           fill="none"
-          stroke="#16a34a"
+          stroke="#0F5C3E"
           strokeWidth="7"
           strokeLinecap="round"
           style={
@@ -91,10 +91,10 @@ function CaseStrengthGauge({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold tabular-nums text-green-700">
+        <span className="text-3xl font-bold tabular-nums text-forest">
           {score}
         </span>
-        <span className="text-sm font-medium text-green-600/90">/100</span>
+        <span className="text-sm font-medium text-forest/80">/100</span>
       </div>
     </div>
   );
@@ -102,7 +102,7 @@ function CaseStrengthGauge({ score }: { score: number }) {
 
 const CHECK_ICON = (
   <span
-    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600"
+    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest"
     aria-hidden
   >
     <svg
@@ -152,17 +152,17 @@ export default async function SummaryPage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+      <div className="min-h-screen bg-paper-gradient">
         <SiteHeader />
-        <main className="px-6 py-16 text-slate-900 sm:py-20">
+        <main className="px-6 py-16 text-ink sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
-            <p className="text-base text-slate-700">
+            <p className="text-base text-ink-2">
               We couldn&apos;t load your case summary right now. Please try again.
             </p>
             <p className="mt-6">
               <Link
                 href={compareHref}
-                className="text-sm font-medium text-blue-600 underline-offset-4 transition hover:text-blue-800 hover:underline"
+                className="text-sm font-medium text-accent underline-offset-4 transition hover:text-accent-deep hover:underline"
               >
                 ← Back to comparison
               </Link>
@@ -201,42 +201,42 @@ export default async function SummaryPage({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+      <main className="mx-auto max-w-5xl px-6 py-12 text-ink">
         <div className="space-y-6">
 
           {/* Back + title */}
           <div>
             <Link
               href={compareHref}
-              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+              className="text-sm text-ink-2 transition-colors hover:text-ink"
             >
               ← Back
             </Link>
-            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+            <h1 className="mt-4 font-serif text-2xl text-ink">
               Your Case Summary
             </h1>
-            <p className="mt-1 text-sm text-gray-500">{formatted}</p>
+            <p className="mt-1 text-sm text-ink-3">{formatted}</p>
           </div>
 
           {/* Key points + case strength */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Key points — spans 2 cols */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm md:col-span-2">
+            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm md:col-span-2">
               <ul className="space-y-3">
                 {keyPoints.map((point) => (
                   <li key={point} className="flex items-start gap-3">
                     {CHECK_ICON}
-                    <span className="text-sm text-gray-700">{point}</span>
+                    <span className="text-sm text-ink-2">{point}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Case strength — 1 col */}
-            <div className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
-              <p className="text-sm font-semibold text-gray-700">
+            <div className="flex flex-col items-center justify-center rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
+              <p className="text-sm font-semibold text-ink">
                 Case Strength
               </p>
               <div className="mt-3">
@@ -249,11 +249,11 @@ export default async function SummaryPage({
           </div>
 
           {/* Potential savings */}
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="rounded-editorial border border-hairline bg-paper-2/40 p-6 shadow-editorial-sm">
+            <h2 className="font-serif text-lg text-ink">
               Potential Savings
             </h2>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-ink-2">
               If your band is reduced from Band {userBand} to a lower band
             </p>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -264,12 +264,12 @@ export default async function SummaryPage({
             ].map(({ amount, period }) => (
                 <div
                   key={period}
-                  className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm"
+                  className="rounded-editorial border border-hairline bg-paper-card p-4 text-center shadow-editorial-sm"
                 >
-                  <p className="text-lg font-semibold text-blue-600">
+                  <p className="text-lg font-semibold text-accent">
                     {amount}
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">{period}</p>
+                  <p className="mt-1 text-xs text-ink-3">{period}</p>
                 </div>
               ))}
             </div>
@@ -278,12 +278,12 @@ export default async function SummaryPage({
           {/* CTA */}
           <Link
             href={appealHref}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-lg font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
           >
             Continue to Appeal →
           </Link>
 
-          <p className="text-center text-xs leading-relaxed text-gray-400">
+          <p className="text-center text-xs leading-relaxed text-ink-3">
             Savings figures are estimates based on average band reductions.
             Actual savings depend on your local authority.
           </p>

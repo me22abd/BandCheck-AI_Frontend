@@ -49,7 +49,7 @@ function CaseStrengthGauge({ score }: { score: number }) {
           cy="50"
           r={r}
           fill="none"
-          stroke="#e5e7eb"
+          stroke="rgba(20, 18, 13, 0.12)"
           strokeWidth="7"
         />
         <circle
@@ -57,7 +57,7 @@ function CaseStrengthGauge({ score }: { score: number }) {
           cy="50"
           r={r}
           fill="none"
-          stroke="#16a34a"
+          stroke="#0F5C3E"
           strokeWidth="7"
           strokeLinecap="round"
           className="bandcheck-gauge-progress"
@@ -71,8 +71,8 @@ function CaseStrengthGauge({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold tabular-nums text-green-700">{score}</span>
-        <span className="text-sm font-medium text-green-600/90">/100</span>
+        <span className="text-3xl font-bold tabular-nums text-forest">{score}</span>
+        <span className="text-sm font-medium text-forest/80">/100</span>
       </div>
     </div>
   );
@@ -114,17 +114,17 @@ export default async function ResultsPage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-paper-gradient">
         <SiteHeader />
-        <main className="px-6 py-16 text-gray-900 sm:py-20">
+        <main className="px-6 py-16 text-ink sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
-            <p className="text-base text-gray-700">
+            <p className="text-base text-ink-2">
               We couldn&apos;t analyze this postcode right now. Please try again.
             </p>
             <p className="mt-6">
               <Link
                 href="/"
-                className="text-sm font-medium text-gray-600 underline-offset-4 transition hover:text-gray-900 hover:underline"
+                className="text-sm font-medium text-ink-2 underline-offset-4 transition hover:text-ink hover:underline"
               >
                 ← Back
               </Link>
@@ -151,24 +151,24 @@ export default async function ResultsPage({
   const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+      <main className="mx-auto max-w-5xl px-6 py-12 text-ink">
         <div className="space-y-6">
 
           {/* Header */}
           <div>
             <Link
               href="/"
-              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+              className="text-sm text-ink-2 transition-colors hover:text-ink"
             >
               ← Back
             </Link>
-            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+            <h1 className="mt-4 font-serif text-2xl text-ink">
               Results for {formatted}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              <Link href="/" className="text-blue-600 hover:text-blue-800 hover:underline">
+            <p className="mt-1 text-sm text-ink-3">
+              <Link href="/" className="text-accent hover:text-accent-deep hover:underline">
                 Edit postcode
               </Link>
             </p>
@@ -176,22 +176,22 @@ export default async function ResultsPage({
 
           {/* Stat cards */}
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
                 Your council tax band
               </p>
               <div className="mt-4 flex justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-4xl font-bold text-blue-600 ring-4 ring-blue-100">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[10px] bg-ink text-4xl font-bold text-paper shadow-sm">
                   {userBand}
                 </div>
               </div>
-              <p className="mt-4 text-xs text-gray-500">
+              <p className="mt-4 text-xs text-ink-3">
                 Varies by local authority — check your bill
               </p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
                 Case strength
               </p>
               <div className="mt-2">
@@ -205,25 +205,25 @@ export default async function ResultsPage({
               ) : null}
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
                 Nearby homes
               </p>
-              <p className="mt-4 text-lg font-semibold text-gray-900">
+              <p className="mt-4 text-lg font-semibold text-ink">
                 {nearbyHomesSummary}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+              <p className="mt-2 text-sm leading-relaxed text-ink-2">
                 {lowerCount} of {totalNearby} nearby properties are in a lower band
               </p>
             </div>
           </div>
 
           {/* Insight banner */}
-          <div className="rounded-xl border border-blue-100 bg-blue-50 px-6 py-5">
-            <p className="text-sm font-semibold text-blue-900">
+          <div className="rounded-editorial border border-hairline bg-accent/5 px-6 py-5">
+            <p className="text-sm font-semibold text-ink">
               {microProof}
             </p>
-            <p className="mt-1 text-sm text-blue-800/80">
+            <p className="mt-1 text-sm text-ink-2">
               You may be overpaying. Our analysis suggests you could have a strong case for appeal.
             </p>
           </div>
@@ -231,18 +231,18 @@ export default async function ResultsPage({
           {/* CTAs */}
           <Link
             href={`/compare/${encodeURIComponent(pathPostcode)}`}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-lg font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
           >
             View Full Breakdown →
           </Link>
           <Link
             href={`/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-8 text-lg font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex min-h-14 w-full items-center justify-center rounded-xl border border-hairline bg-paper-card px-8 text-lg font-semibold text-ink shadow-editorial-sm transition-all hover:opacity-90"
           >
             Start Appeal
           </Link>
 
-          <p className="text-center text-xs leading-relaxed text-gray-400">
+          <p className="text-center text-xs leading-relaxed text-ink-3">
             Nearby properties are based on real postcode data. Results should be used as a guide only.
           </p>
 

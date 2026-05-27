@@ -17,15 +17,11 @@ function formatPostcode(pc: string) {
 }
 
 function bandBadgeClass(band: string, userBand: string): string {
-  const base = "px-2 py-1 text-xs font-medium rounded-md";
+  const base = "px-2 py-1 text-xs font-semibold rounded-md";
   const d = councilTaxBandIndex(band) - councilTaxBandIndex(userBand);
-  if (d < 0) return `${base} bg-green-100 text-green-700`;
-  if (d === 0) return `${base} bg-gray-100 text-gray-700`;
-  return `${base} bg-red-100 text-red-600`;
-}
-
-function userBandBadgeClass(): string {
-  return "px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700";
+  if (d < 0) return `${base} bg-forest/10 text-forest`;
+  if (d === 0) return `${base} bg-ink/5 text-ink-2`;
+  return `${base} bg-accent/10 text-accent`;
 }
 
 function bandDifferenceLabel(propertyBand: string, userBand: string): string {
@@ -38,9 +34,9 @@ function bandDifferenceLabel(propertyBand: string, userBand: string): string {
 function bandDifferenceTone(propertyBand: string, userBand: string): string {
   const d =
     councilTaxBandIndex(propertyBand) - councilTaxBandIndex(userBand);
-  if (d < 0) return "font-medium text-green-600";
-  if (d === 0) return "text-gray-500";
-  return "font-medium text-red-600";
+  if (d < 0) return "font-medium text-forest";
+  if (d === 0) return "text-ink-3";
+  return "font-medium text-accent";
 }
 
 function formatDistanceMiles(miles?: number): string {
@@ -82,17 +78,17 @@ export default async function ComparePage({
 
   if (!apiData) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+      <div className="min-h-screen bg-paper-gradient">
         <SiteHeader />
-        <main className="px-6 py-16 text-slate-900 sm:py-20">
+        <main className="px-6 py-16 text-ink sm:py-20">
           <div className="mx-auto w-full max-w-lg text-center">
-            <p className="text-base text-slate-700">
+            <p className="text-base text-ink-2">
               We couldn&apos;t load comparison data right now. Please try again.
             </p>
             <p className="mt-6">
               <Link
                 href={resultsHref}
-                className="text-sm font-medium text-[#2563EB] underline-offset-4 transition hover:text-blue-800 hover:underline"
+                className="text-sm font-medium text-accent underline-offset-4 transition hover:text-accent-deep hover:underline"
               >
                 ← Back to results
               </Link>
@@ -122,38 +118,38 @@ export default async function ComparePage({
   const summaryHref = `/summary/${encodeURIComponent(compact)}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12 text-gray-900">
+      <main className="mx-auto max-w-5xl px-6 py-12 text-ink">
         <div className="space-y-6">
 
           {/* Header */}
           <div>
             <Link
               href={resultsHref}
-              className="text-sm text-gray-600 transition-colors hover:text-gray-900"
+              className="text-sm text-ink-2 transition-colors hover:text-ink"
             >
               ← Back
             </Link>
-            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+            <h1 className="mt-4 font-serif text-2xl text-ink">
               Comparable Properties
             </h1>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-ink-2">
               We found {count} similar propert{count === 1 ? "y" : "ies"} near {formatted}.
             </p>
           </div>
 
           {/* Table card */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-editorial border border-hairline bg-paper-card shadow-editorial-sm">
             {hasComparable ? (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50">
+                    <tr className="border-b border-hairline bg-paper-2/50">
                       {["Address", "Distance", "Band", "Your Band", "Difference"].map((h) => (
                         <th
                           key={h}
-                          className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500"
+                          className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-ink-3"
                         >
                           {h}
                         </th>
@@ -164,12 +160,12 @@ export default async function ComparePage({
                     {mockProperties.map((row, index) => (
                       <tr
                         key={`${row.address}-${index}`}
-                        className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
+                        className="border-b border-hairline transition-colors last:border-b-0 hover:bg-paper-2/30"
                       >
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                        <td className="px-4 py-3 text-sm font-medium text-ink">
                           {row.address}
                         </td>
-                        <td className="px-4 py-3 text-sm tabular-nums text-gray-500">
+                        <td className="px-4 py-3 text-sm tabular-nums text-ink-3">
                           {formatDistanceMiles(row.distanceMiles)}
                         </td>
                         <td className="px-4 py-3">
@@ -178,7 +174,7 @@ export default async function ComparePage({
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={userBandBadgeClass()}>
+                          <span className={bandBadgeClass(userBand, userBand)}>
                             {userBand}
                           </span>
                         </td>
@@ -192,10 +188,10 @@ export default async function ComparePage({
               </div>
             ) : (
               <div className="px-6 py-12 text-center">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-ink">
                   No comparable properties found in your area
                 </p>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-ink-3">
                   Try another postcode or check back later.
                 </p>
               </div>
@@ -206,16 +202,16 @@ export default async function ComparePage({
           {hasComparable ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {[
-                { label: "Lower Bands", value: lowerBands, color: "text-green-600" },
-                { label: "Same Band",   value: sameBand,   color: "text-gray-700" },
-                { label: "Higher Bands",value: higherBands,color: "text-red-500"  },
+                { label: "Lower Bands", value: lowerBands, color: "text-forest" },
+                { label: "Same Band",   value: sameBand,   color: "text-ink" },
+                { label: "Higher Bands",value: higherBands,color: "text-accent"  },
               ].map(({ label, value, color }) => (
                 <div
                   key={label}
-                  className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm"
+                  className="rounded-editorial border border-hairline bg-paper-card p-4 text-center shadow-editorial-sm"
                 >
                   <p className={`text-lg font-semibold ${color}`}>{value}</p>
-                  <p className="mt-1 text-xs text-gray-500">{label}</p>
+                  <p className="mt-1 text-xs text-ink-3">{label}</p>
                 </div>
               ))}
             </div>
@@ -225,14 +221,14 @@ export default async function ComparePage({
           {hasComparable ? (
             <Link
               href={summaryHref}
-              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-blue-600 px-8 text-lg font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-lg font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
             >
               Start Your Appeal →
             </Link>
           ) : (
             <Link
               href={resultsHref}
-              className="text-sm text-gray-600 underline-offset-4 transition hover:text-gray-900 hover:underline"
+              className="text-sm text-ink-2 underline-offset-4 transition hover:text-ink hover:underline"
             >
               ← Back to results
             </Link>

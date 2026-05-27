@@ -15,23 +15,23 @@ const POLICY_LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-gray-200 bg-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-gray-500">© {new Date().getFullYear()} BandCheck AI</p>
+    <footer className="border-t border-hairline bg-paper-card">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-ink-3 sm:flex-row sm:items-center sm:justify-between">
+        <p>© {new Date().getFullYear()} Bandcheck ai</p>
         <nav className="flex flex-wrap items-center gap-4" aria-label="Footer">
           {FOOTER_LINKS.map(({ label, href }) => (
-            <Link key={label} href={href} className="hover:text-gray-900">
+            <Link key={label} href={href} className="transition-colors hover:text-ink">
               {label}
             </Link>
           ))}
         </nav>
         <nav className="flex flex-wrap items-center gap-4" aria-label="Legal">
           {POLICY_LINKS.map(({ label, href }) => (
-            <Link key={label} href={href} className="hover:text-gray-900">
+            <Link key={label} href={href} className="transition-colors hover:text-ink">
               {label}
             </Link>
           ))}
-          <a href="mailto:hello@bandcheck.ai" className="hover:text-gray-900">
+          <a href="mailto:hello@bandcheck.ai" className="transition-colors hover:text-ink">
             Contact
           </a>
         </nav>

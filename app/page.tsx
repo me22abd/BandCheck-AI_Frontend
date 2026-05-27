@@ -4,10 +4,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { EditorialCard } from "@/components/editorial/EditorialCard";
+import { EditorialButton } from "@/components/editorial/EditorialButton";
+import { SmallChip } from "@/components/editorial/SmallChip";
 
 function normalizePostcode(raw: string): string {
   return raw.replace(/\s+/g, "").toUpperCase();
 }
+
+const HOW_IT_WORKS = [
+  {
+    n: "01",
+    title: "Pull comparables",
+    body: "We fetch every home sold near yours since 1991 from the Land Registry.",
+  },
+  {
+    n: "02",
+    title: "Cross-check the VOA",
+    body: "AI compares the bands of comparable homes against yours.",
+  },
+  {
+    n: "03",
+    title: "Build the case",
+    body: "If you're owed a refund, we draft the appeal pack automatically.",
+  },
+];
+
+const STATS = [
+  { v: "400,000", l: "homes checked" },
+  { v: "£3,000", l: "avg. refund" },
+  { v: "30 sec", l: "to check" },
+];
 
 export default function Home() {
   const router = useRouter();
@@ -23,134 +50,114 @@ export default function Home() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-b from-white via-blue-50/30 to-gray-50">
+    <div className="relative flex min-h-screen flex-col bg-paper-gradient">
       <SiteHeader />
 
-      <main className="relative flex flex-1 flex-col items-center justify-center px-6 pb-28 pt-12 sm:pb-36 sm:pt-16">
-        <div className="relative z-10 w-full max-w-2xl text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl sm:leading-[1.1]">
-            1 in 3 UK homes are in the wrong council tax band.{" "}
-            <span className="text-blue-600">Is yours one of them?</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg">
-            The average successful appeal saves £3,000+ in backdated refunds.
-            Find out if you&apos;re overpaying in 30 seconds — no paperwork, no
-            upfront cost.
-          </p>
+      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 pb-20 pt-10 sm:pt-14">
+        <div className="mb-4">
+          <SmallChip tone="accent">UK Council Tax · Beta</SmallChip>
+        </div>
 
-          <form
-            id="postcode-input"
-            onSubmit={handleSubmit}
-            className="mx-auto mt-10 w-full max-w-xl"
-          >
-            <label htmlFor="postcode" className="sr-only">
-              Postcode
-            </label>
-            <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white/90 p-2 shadow-xl shadow-slate-200/60 backdrop-blur-sm transition-all duration-200 hover:shadow-2xl sm:flex-row sm:items-center sm:gap-0 sm:p-2">
+        <h1 className="font-serif text-[2rem] leading-[1.12] tracking-tight text-ink sm:text-[2.35rem]">
+          You might be in the{" "}
+          <em className="font-serif italic text-accent">wrong</em> council tax band.
+        </h1>
+        <p className="mt-4 text-base leading-relaxed text-ink-2">
+          1 in 3 UK homes are. We check yours against the Land Registry &amp; VOA in
+          seconds — no paperwork, no upfront cost.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8">
+          <label htmlFor="postcode" className="sr-only">
+            Postcode
+          </label>
+          <EditorialCard className="overflow-hidden p-1.5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
               <input
                 id="postcode"
                 name="postcode"
                 type="text"
                 autoComplete="postal-code"
-                placeholder="Enter your postcode (e.g. LU1 2AB)"
+                placeholder="e.g. LU1 2AB"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value)}
-                className="min-h-12 w-full flex-1 rounded-xl border-0 bg-transparent px-4 text-left text-base text-gray-900 outline-none ring-0 placeholder:text-gray-400 focus:ring-0 sm:min-h-14"
+                className="min-h-12 flex-1 rounded-xl border-0 bg-transparent px-4 text-base text-ink outline-none placeholder:text-ink-3"
               />
               <button
                 type="submit"
                 disabled={!postcode.trim() || loading}
-                className="min-h-12 shrink-0 rounded-xl bg-blue-600 px-8 text-base font-semibold text-white shadow-md shadow-blue-600/25 transition-all duration-200 hover:-translate-y-[1px] hover:bg-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:min-h-12 sm:rounded-lg"
+                className="min-h-12 shrink-0 rounded-xl bg-accent px-6 text-[15px] font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-50"
               >
-                {loading ? "Checking..." : "Check Now →"}
+                {loading ? "Checking…" : "Check my band →"}
               </button>
             </div>
-          </form>
+          </EditorialCard>
+        </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500">
-            Join 2,000+ homeowners checking their council tax band
-          </p>
+        <p className="mt-3 text-center text-xs text-ink-3">
+          Free check · No account required
+        </p>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-gray-600">
-            <span className="inline-flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600" aria-hidden>
-                ✓
-              </span>
-              No cost upfront
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-blue-600" aria-hidden>
-                ⏱
-              </span>
-              Takes 30 seconds
-            </span>
-          </div>
-
-          {/* How it works — preview */}
-          <section className="mx-auto mt-16 w-full max-w-4xl sm:mt-20">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">How it works</h2>
-              <Link href="/how-it-works" className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Learn more →
-              </Link>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                { n: "1", title: "Enter postcode", body: "We find your band and pull nearby comparable properties instantly." },
-                { n: "2", title: "Compare bands", body: "See which nearby homes pay less and get a case strength score." },
-                { n: "3", title: "Start appeal", body: "Answer a few questions — we generate a complete appeal pack." },
-              ].map((step) => (
-                <div key={step.n} className="rounded-xl border border-gray-200 bg-white p-5 text-left shadow-sm">
-                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-                    {step.n}
-                  </div>
-                  <p className="text-sm font-semibold text-gray-900">{step.title}</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{step.body}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* About + Pricing — side by side previews */}
-          <div className="mx-auto mt-8 grid w-full max-w-4xl gap-4 sm:grid-cols-2">
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">About</p>
-              <h2 className="mt-2 text-base font-semibold text-gray-900">Built for UK homeowners</h2>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                We simplify the council tax appeal process using real property data — no jargon, no solicitors, no upfront cost.
+        <div className="mt-10 grid grid-cols-3 gap-3">
+          {STATS.map(({ v, l }) => (
+            <EditorialCard key={l} className="px-3 py-4 text-center">
+              <p className="font-serif text-xl text-ink sm:text-2xl">{v}</p>
+              <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-ink-3">
+                {l}
               </p>
-              <Link href="/about" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
-                Learn about us →
-              </Link>
-            </section>
-
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">Pricing</p>
-              <h2 className="mt-2 text-base font-semibold text-gray-900">Free to check. Only pay if you save.</h2>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                No subscription, no upfront cost. We take a small percentage of your savings — only if your appeal succeeds.
-              </p>
-              <Link href="/pricing" className="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
-                See pricing details →
-              </Link>
-            </section>
-          </div>
+            </EditorialCard>
+          ))}
         </div>
 
-        <div
-          className="pointer-events-none absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-blue-200/40 via-blue-100/25 to-transparent"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 left-0 right-0 z-0"
-          aria-hidden
-        >
-          <img
-            src="/house-bg.svg"
-            alt=""
-            className="h-[280px] w-full object-cover object-bottom opacity-[0.22] mix-blend-multiply"
-            aria-hidden
-          />
+        <section className="mt-12">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-serif text-xl text-ink">How it works</h2>
+            <Link
+              href="/how-it-works"
+              className="text-sm font-medium text-accent hover:text-accent-deep"
+            >
+              Full guide →
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {HOW_IT_WORKS.map((step) => (
+              <EditorialCard key={step.n} className="p-5">
+                <p className="font-mono text-[11px] font-medium text-accent">{step.n}</p>
+                <p className="mt-1 text-sm font-semibold text-ink">{step.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{step.body}</p>
+              </EditorialCard>
+            ))}
+          </div>
+        </section>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <EditorialCard className="p-5">
+            <SmallChip tone="forest">About</SmallChip>
+            <h3 className="mt-3 font-serif text-lg text-ink">Built for UK homeowners</h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink-2">
+              Real property data, plain English, no solicitors and no upfront cost.
+            </p>
+            <Link
+              href="/about"
+              className="mt-4 inline-block text-sm font-medium text-accent hover:text-accent-deep"
+            >
+              Learn more →
+            </Link>
+          </EditorialCard>
+
+          <EditorialCard className="p-5">
+            <SmallChip tone="accent">Pricing</SmallChip>
+            <h3 className="mt-3 font-serif text-lg text-ink">Only pay if you save</h3>
+            <p className="mt-2 text-sm leading-relaxed text-ink-2">
+              Free to check. We take a small share of savings — only if your appeal succeeds.
+            </p>
+            <Link
+              href="/pricing"
+              className="mt-4 inline-block text-sm font-medium text-accent hover:text-accent-deep"
+            >
+              See pricing →
+            </Link>
+          </EditorialCard>
         </div>
       </main>
     </div>

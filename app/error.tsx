@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { EditorialButton } from "@/components/editorial/EditorialButton";
 
 export default function GlobalError({
   error,
@@ -16,30 +17,27 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-lg px-6 py-24 text-center text-gray-900">
-        <p className="text-4xl font-bold text-gray-300">Oops</p>
-        <h1 className="mt-4 text-xl font-semibold text-gray-900">
+      <main className="mx-auto max-w-lg px-6 py-24 text-center text-ink">
+        <p className="font-serif text-4xl text-ink-3">Oops</p>
+        <h1 className="mt-4 font-serif text-xl text-ink">
           Something went wrong
         </h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-ink-2">
           An unexpected error occurred. Please try again or go back to the home page.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <button
             type="button"
             onClick={reset}
-            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-blue-700"
+            className="rounded-xl bg-accent px-5 py-2 text-sm font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep"
           >
             Try again
           </button>
-          <Link
-            href="/"
-            className="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50"
-          >
+          <EditorialButton href="/" variant="secondary">
             ← Go home
-          </Link>
+          </EditorialButton>
         </div>
       </main>
     </div>

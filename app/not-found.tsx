@@ -3,23 +3,23 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="px-6 py-16 text-slate-900 sm:py-20">
+      <main className="px-6 py-16 text-ink sm:py-20">
         <div className="mx-auto w-full max-w-lg text-center">
-          <p className="text-sm font-medium uppercase tracking-wide text-slate-500">
+          <p className="text-sm font-medium uppercase tracking-wide text-ink-3">
             404
           </p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="mt-2 font-serif text-2xl tracking-tight sm:text-3xl">
             Page not found
           </h1>
-          <p className="mt-4 text-base leading-relaxed text-slate-600">
+          <p className="mt-4 text-base leading-relaxed text-ink-2">
             The page you’re looking for doesn’t exist.
           </p>
           <p className="mt-8">
             <Link
               href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#2563EB] px-6 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl bg-accent px-6 text-base font-semibold text-paper shadow-btn-accent transition hover:bg-accent-deep"
             >
               Back to home
             </Link>
@@ -29,4 +29,3 @@ export default function NotFound() {
     </div>
   );
 }
-
