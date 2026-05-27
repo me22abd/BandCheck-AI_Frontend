@@ -4,76 +4,125 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { baseUrl } from "@/lib/apiBaseUrl";
 import {
   calculateCaseStrengthScore,
-  formatMicroProof,
   isBandLowerThan,
+  councilTaxBandIndex,
   type NearbyProperty,
 } from "@/lib/scoring";
+import {
+  getAppealSummary,
+  bandKey,
+  formatGbp,
+  BAND_ANNUAL,
+  likelyLowerBand,
+} from "@/lib/appealEstimates";
 
 function formatPostcode(pc: string) {
   return pc.replace(/(.{3})$/, " $1");
 }
 
-function summarizeNearbyHomes(properties: NearbyProperty[]): string {
-  if (properties.length === 0) return "No comparisons yet";
-  const freq = new Map<string, number>();
-  for (const p of properties) {
-    const b = p.band;
-    freq.set(b, (freq.get(b) ?? 0) + 1);
-  }
-  let topBand = properties[0].band;
-  let max = 0;
-  for (const [band, n] of freq) {
-    if (n > max) {
-      max = n;
-      topBand = band;
-    }
-  }
-  return `Mostly Band ${topBand}`;
+function formatDistanceMiles(miles?: number): string {
+  if (typeof miles !== "number" || !Number.isFinite(miles)) return "";
+  if (miles < 0.1) return "<0.1 mi";
+  return `${miles.toFixed(2)} mi`;
 }
 
-function CaseStrengthGauge({ score }: { score: number }) {
-  const r = 40;
-  const c = 2 * Math.PI * r;
-  const endOffset = c - (score / 100) * c;
-  return (
-    <div className="relative mx-auto h-36 w-36">
-      <svg
-        className="-rotate-90"
-        width="144"
-        height="144"
-        viewBox="0 0 100 100"
-        aria-hidden
+/** Band pill — matches the app's BandPill */
+function BandPill({
+  letter,
+  tone = "ink",
+  big = false,
+}: {
+  letter: string;
+  tone?: "ink" | "forest" | "accent";
+  big?: boolean;
+}) {
+  const bg =
+    tone === "forest"
+      ? "bg-forest text-paper"
+      : tone === "accent"
+        ? "bg-accent text-paper"
+        : "bg-ink text-paper";
+  if (big) {
+    return (
+      <span
+        className={`inline-flex h-12 w-12 items-center justify-center rounded-[10px] text-[22px] font-bold shadow-sm ${bg}`}
       >
-        <circle
-          cx="50"
-          cy="50"
-          r={r}
-          fill="none"
-          stroke="rgba(20, 18, 13, 0.12)"
-          strokeWidth="7"
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={r}
-          fill="none"
-          stroke="#0F5C3E"
-          strokeWidth="7"
-          strokeLinecap="round"
-          className="bandcheck-gauge-progress"
-          style={
-            {
-              ["--gauge-circ"]: String(c),
-              ["--gauge-start"]: String(c),
-              ["--gauge-end"]: String(endOffset),
-            } as React.CSSProperties
-          }
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold tabular-nums text-forest">{score}</span>
-        <span className="text-sm font-medium text-forest/80">/100</span>
+        {letter}
+      </span>
+    );
+  }
+  return (
+    <span
+      className={`inline-flex h-7 w-7 items-center justify-center rounded-[7px] text-sm font-bold shadow-sm ${bg}`}
+    >
+      {letter}
+    </span>
+  );
+}
+
+/** Horizontal band ladder — A to H with dots for nearby props */
+function BandLadder({
+  userBand,
+  bands,
+}: {
+  userBand: string;
+  bands: string[];
+}) {
+  const allBands = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const userKey = bandKey(userBand);
+  const userRank = councilTaxBandIndex(userBand);
+
+  const counts: Record<string, number> = {};
+  for (const b of bands) {
+    const k = bandKey(b);
+    counts[k] = (counts[k] ?? 0) + 1;
+  }
+
+  return (
+    <div className="rounded-editorial border border-hairline bg-paper-card p-5 shadow-editorial-sm">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
+        Where you sit
+      </p>
+      <div className="flex items-end gap-1.5">
+        {allBands.map((b) => {
+          const rank = councilTaxBandIndex(b);
+          const isUser = b === userKey;
+          const isLower = rank < userRank;
+          const count = counts[b] ?? 0;
+          return (
+            <div key={b} className="flex flex-1 flex-col items-center gap-1">
+              {/* dot stack */}
+              <div className="flex min-h-6 flex-col-reverse items-center gap-0.5">
+                {Array.from({ length: Math.min(count, 5) }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${isLower ? "bg-forest" : "bg-ink-3"}`}
+                  />
+                ))}
+                {count > 5 ? (
+                  <span className="text-[9px] font-bold text-ink-3">+{count - 5}</span>
+                ) : null}
+              </div>
+              {/* band box */}
+              <div
+                className={`flex h-9 w-full items-center justify-center rounded-md text-sm font-bold transition-all ${
+                  isUser
+                    ? "bg-accent text-paper shadow-btn-accent scale-110"
+                    : isLower
+                      ? "bg-forest/10 text-forest"
+                      : "bg-ink/5 text-ink-3"
+                }`}
+              >
+                {b}
+              </div>
+            </div>
+          );
+        })}
       </div>
+      <p className="mt-3 text-[11px] text-ink-3">
+        <span className="font-semibold text-accent">{userKey}</span> = your band ·{" "}
+        <span className="font-semibold text-forest">green</span> = lower band (potential match)
+      </p>
     </div>
   );
 }
@@ -87,7 +136,6 @@ export default async function ResultsPage({
   const decodedPostcode = decodeURIComponent(postcodeParam);
   const compact = decodedPostcode.replace(/\s+/g, "").toUpperCase();
   const formatted = formatPostcode(compact);
-  const pathPostcode = compact;
 
   let apiData: { userBand: string; nearbyProperties: NearbyProperty[] } | null = null;
   try {
@@ -103,9 +151,7 @@ export default async function ResultsPage({
         nearbyProperties: NearbyProperty[];
       };
     } else {
-      const errJson = (await res.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+      const errJson = (await res.json().catch(() => null)) as { error?: string } | null;
       console.error("Check API error:", res.status, errJson?.error ?? "Unknown");
     }
   } catch (e) {
@@ -122,11 +168,8 @@ export default async function ResultsPage({
               We couldn&apos;t analyze this postcode right now. Please try again.
             </p>
             <p className="mt-6">
-              <Link
-                href="/"
-                className="text-sm font-medium text-ink-2 underline-offset-4 transition hover:text-ink hover:underline"
-              >
-                ← Back
+              <Link href="/" className="text-sm font-medium text-accent underline-offset-4 hover:text-accent-deep hover:underline">
+                ← Try another postcode
               </Link>
             </p>
           </div>
@@ -136,117 +179,134 @@ export default async function ResultsPage({
   }
 
   const { userBand, nearbyProperties } = apiData;
-
-  const { score, lowerCount, label, lowConfidence } =
-    calculateCaseStrengthScore(userBand, nearbyProperties);
-
-  const microProof = formatMicroProof(lowerCount);
-  const nearbyHomesSummary = summarizeNearbyHomes(nearbyProperties);
-  const totalNearby = nearbyProperties.length;
+  const count = nearbyProperties.length;
+  const user = bandKey(userBand);
+  const lowerBand = likelyLowerBand(userBand, nearbyProperties.map((p) => p.band));
+  const currentAnnual = BAND_ANNUAL[user] ?? BAND_ANNUAL.D;
+  const reducedAnnual = lowerBand ? (BAND_ANNUAL[lowerBand] ?? currentAnnual) : currentAnnual;
+  const { lowerCount } = calculateCaseStrengthScore(userBand, nearbyProperties);
 
   const appealComparables = nearbyProperties
     .filter((p) => isBandLowerThan(p.band, userBand))
     .slice(0, 5)
     .map((p) => ({ address: p.address, band: p.band }));
   const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
+  const summaryHref = `/summary/${encodeURIComponent(compact)}`;
+  const appealHref = `/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`;
 
   return (
     <div className="min-h-screen bg-paper-gradient">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12 text-ink">
-        <div className="space-y-6">
+      <main className="mx-auto max-w-2xl px-6 py-10 text-ink">
 
-          {/* Header */}
-          <div>
-            <Link
-              href="/"
-              className="text-sm text-ink-2 transition-colors hover:text-ink"
-            >
-              ← Back
-            </Link>
-            <h1 className="mt-4 font-serif text-2xl text-ink">
-              Results for {formatted}
-            </h1>
-            <p className="mt-1 text-sm text-ink-3">
-              <Link href="/" className="text-accent hover:text-accent-deep hover:underline">
-                Edit postcode
-              </Link>
-            </p>
-          </div>
+        {/* Back */}
+        <Link href="/" className="text-sm text-ink-2 transition-colors hover:text-ink">
+          ← Back
+        </Link>
 
-          {/* Stat cards */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
-                Your council tax band
-              </p>
-              <div className="mt-4 flex justify-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[10px] bg-ink text-4xl font-bold text-paper shadow-sm">
-                  {userBand}
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-ink-3">
-                Varies by local authority — check your bill
-              </p>
-            </div>
-
-            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
-                Case strength
-              </p>
-              <div className="mt-2">
-                <CaseStrengthGauge score={score} />
-              </div>
-              <p className="mt-2 text-sm font-semibold text-green-700">{label}</p>
-              {lowConfidence ? (
-                <p className="mt-1 text-xs text-gray-500">
-                  Limited data — confidence may be lower
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-editorial border border-hairline bg-paper-card p-6 shadow-editorial-sm text-center">
-              <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
-                Nearby homes
-              </p>
-              <p className="mt-4 text-lg font-semibold text-ink">
-                {nearbyHomesSummary}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-2">
-                {lowerCount} of {totalNearby} nearby properties are in a lower band
-              </p>
-            </div>
-          </div>
-
-          {/* Insight banner */}
-          <div className="rounded-editorial border border-hairline bg-accent/5 px-6 py-5">
-            <p className="text-sm font-semibold text-ink">
-              {microProof}
-            </p>
-            <p className="mt-1 text-sm text-ink-2">
-              You may be overpaying. Our analysis suggests you could have a strong case for appeal.
-            </p>
-          </div>
-
-          {/* CTAs */}
-          <Link
-            href={`/compare/${encodeURIComponent(pathPostcode)}`}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-lg font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
-          >
-            View Full Breakdown →
-          </Link>
-          <Link
-            href={`/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`}
-            className="flex min-h-14 w-full items-center justify-center rounded-xl border border-hairline bg-paper-card px-8 text-lg font-semibold text-ink shadow-editorial-sm transition-all hover:opacity-90"
-          >
-            Start Appeal
-          </Link>
-
-          <p className="text-center text-xs leading-relaxed text-ink-3">
-            Nearby properties are based on real postcode data. Results should be used as a guide only.
+        {/* Your home card */}
+        <div className="mt-5 rounded-editorial border border-hairline bg-paper-card p-5 shadow-editorial-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">
+            Your home
           </p>
+          <div className="mt-3 flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-serif text-xl text-ink">{formatted}</p>
+              <p className="mt-0.5 font-mono text-xs text-ink-3">
+                {formatted} · Council tax band {user}
+              </p>
+            </div>
+            <BandPill letter={user} tone="accent" big />
+          </div>
 
+          {lowerBand ? (
+            <div className="mt-4 flex items-stretch gap-0 divide-x divide-hairline rounded-xl border border-hairline">
+              <div className="flex-1 px-4 py-3 text-center">
+                <p className="font-serif text-lg text-ink">{formatGbp(currentAnnual)}</p>
+                <p className="mt-0.5 text-[11px] text-ink-3">this year (band {user})</p>
+              </div>
+              <div className="flex-1 px-4 py-3 text-center">
+                <p className="font-serif text-lg text-forest">{formatGbp(reducedAnnual)}</p>
+                <p className="mt-0.5 text-[11px] text-ink-3">if reduced to {lowerBand}</p>
+              </div>
+            </div>
+          ) : null}
         </div>
+
+        {/* Band ladder */}
+        <div className="mt-4">
+          <BandLadder
+            userBand={userBand}
+            bands={nearbyProperties.map((p) => p.band)}
+          />
+        </div>
+
+        {/* Property list */}
+        {count > 0 ? (
+          <div className="mt-4">
+            <p className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-ink-3">
+              Comparable properties
+            </p>
+            <div className="overflow-hidden rounded-editorial border border-hairline bg-paper-card shadow-editorial-sm">
+              {nearbyProperties.map((row, index) => {
+                const match = isBandLowerThan(row.band, userBand);
+                return (
+                  <div
+                    key={`${row.address}-${index}`}
+                    className={`flex items-center gap-3 px-4 py-3.5 ${
+                      index > 0 ? "border-t border-hairline" : ""
+                    } ${!match ? "bg-ink/[0.015]" : ""}`}
+                  >
+                    <BandPill letter={bandKey(row.band)} tone={match ? "forest" : "ink"} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ink">{row.address}</p>
+                      {row.distanceMiles !== undefined ? (
+                        <p className="font-mono text-[10.5px] text-ink-3">
+                          {formatDistanceMiles(row.distanceMiles)}
+                        </p>
+                      ) : null}
+                    </div>
+                    {match ? (
+                      <span className="rounded-md bg-forest/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-forest">
+                        match
+                      </span>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-2 px-1 text-xs text-ink-3">
+              <span className="font-semibold text-forest">{lowerCount} of {count}</span> sit in a lower band than yours
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-editorial border border-hairline bg-paper-card px-6 py-8 text-center shadow-editorial-sm">
+            <p className="text-sm font-medium text-ink">No comparable properties found</p>
+            <p className="mt-2 text-sm text-ink-3">
+              We couldn&apos;t find nearby matches, but you can still continue to the appeal builder.
+            </p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="mt-6 space-y-3">
+          <Link
+            href={summaryHref}
+            className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-[15px] font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
+          >
+            See your case →
+          </Link>
+          <Link
+            href={appealHref}
+            className="flex min-h-12 w-full items-center justify-center rounded-xl border border-hairline bg-paper-card px-8 text-sm font-medium text-ink-2 shadow-editorial-sm transition-all hover:bg-paper-2/50"
+          >
+            Skip to Appeal Builder
+          </Link>
+        </div>
+
+        <p className="mt-4 text-center text-xs text-ink-3">
+          Results are based on Land Registry &amp; VOA data. Used as a guide only.
+        </p>
       </main>
     </div>
   );

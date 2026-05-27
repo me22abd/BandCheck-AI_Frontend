@@ -116,6 +116,7 @@ export default async function ComparePage({
   }
 
   const summaryHref = `/summary/${encodeURIComponent(compact)}`;
+  const fullResultsHref = `/results/${encodeURIComponent(compact)}`;
 
   return (
     <div className="min-h-screen bg-paper-gradient">
@@ -126,13 +127,13 @@ export default async function ComparePage({
           {/* Header */}
           <div>
             <Link
-              href={resultsHref}
+              href={fullResultsHref}
               className="text-sm text-ink-2 transition-colors hover:text-ink"
             >
               ← Back
             </Link>
             <h1 className="mt-4 font-serif text-2xl text-ink">
-              Comparable Properties
+              Full Comparable Table
             </h1>
             <p className="mt-1 text-sm text-ink-2">
               We found {count} similar propert{count === 1 ? "y" : "ies"} near {formatted}.
@@ -223,11 +224,11 @@ export default async function ComparePage({
               href={summaryHref}
               className="flex min-h-14 w-full items-center justify-center rounded-xl bg-accent px-8 text-lg font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep active:translate-y-0.5"
             >
-              Start Your Appeal →
+              See your case →
             </Link>
           ) : (
             <Link
-              href={resultsHref}
+              href={fullResultsHref}
               className="text-sm text-ink-2 underline-offset-4 transition hover:text-ink hover:underline"
             >
               ← Back to results
