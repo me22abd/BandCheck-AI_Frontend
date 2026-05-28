@@ -3,14 +3,17 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
-  // pdfkit reads .afm font metric files from node_modules at runtime.
-  // Without this, Vercel's file-tracer omits them and the PDF generation
-  // crashes silently, so the email arrives with no attachment.
+
+  // Keep pdfkit out of Next.js's bundle entirely so it is loaded from
+  // node_modules at runtime. pdfkit uses __dirname to locate its .afm font
+  // files; if Next.js inlines the module those relative paths break and PDF
+  // generation silently fails (email arrives with no attachment).
+  serverExternalPackages: ["pdfkit"],
+
+  // Belt-and-suspenders: also tell the file tracer to copy the data files
+  // so they exist alongside the function on Vercel.
   outputFileTracingIncludes: {
-    "/api/lead": [
-      "./node_modules/pdfkit/js/data/**/*",
-      "./node_modules/pdfkit/js/**/*.js",
-    ],
+    "/api/lead": ["./node_modules/pdfkit/js/data/**/*"],
   },
 };
 
