@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BandLadder } from "../components/editorial/BandLadder";
 import { BandPill } from "../components/editorial/BandPill";
@@ -9,7 +9,7 @@ import { IconButton } from "../components/editorial/IconButton";
 import { PaperBackground } from "../components/editorial/PaperBackground";
 import { SmallChip } from "../components/editorial/SmallChip";
 import { TopBar } from "../components/editorial/TopBar";
-import type { CheckResponse } from "../lib/api";
+import { fetchDistrictStats, type CheckResponse, type DistrictStats } from "../lib/api";
 import { BAND_ANNUAL, bandKey, formatGbp, likelyLowerBand } from "../lib/appealEstimates";
 import { formatPostcode } from "../lib/postcode";
 import { councilTaxBandIndex, formatDistanceMiles } from "../lib/scoring";
@@ -18,13 +18,23 @@ import type { EditorialFonts } from "../theme/editorial";
 
 type Props = {
   data: CheckResponse;
+  apiBaseUrl: string;
   fonts: EditorialFonts;
   onBack: () => void;
   onContinue: () => void;
 };
 
-export function CompareScreen({ data, fonts, onBack, onContinue }: Props) {
+export function CompareScreen({ data, apiBaseUrl, fonts, onBack, onContinue }: Props) {
   const { userBand, nearbyProperties } = data;
+  const [districtStats, setDistrictStats] = useState<DistrictStats | null>(null);
+
+  useEffect(() => {
+    if (data.district) {
+      fetchDistrictStats(apiBaseUrl, data.district).then((s) => {
+        if (s && s.totalChecked >= 5) setDistrictStats(s);
+      });
+    }
+  }, [apiBaseUrl, data.district]);
   const formatted = formatPostcode(data.postcode);
   const count = nearbyProperties.length;
 
@@ -126,6 +136,21 @@ export function CompareScreen({ data, fonts, onBack, onContinue }: Props) {
             </View>
           </View>
 
+          {/* District intelligence banner */}
+          {districtStats && districtStats.strongCasePct > 0 ? (
+            <View style={styles.districtBanner}>
+              <Text style={styles.districtEmoji}>📊</Text>
+              <View style={styles.districtBody}>
+                <Text style={[styles.districtStat, { fontFamily: fonts.sansBold }]}>
+                  {districtStats.strongCasePct}% of properties checked in {districtStats.district}
+                </Text>
+                <Text style={[styles.districtSub, { fontFamily: fonts.sans }]}>
+                  had a strong case for appeal — based on {districtStats.totalChecked.toLocaleString()} checks
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
           {count > 0 ? (
             <>
               {/* Band scatter */}
@@ -223,6 +248,17 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 120,
   },
+  districtBanner: {
+    flexDirection: "row", alignItems: "flex-start", gap: 10,
+    marginHorizontal: 16, marginTop: 10, marginBottom: 4,
+    backgroundColor: editorial.colors.chipForestBg,
+    borderRadius: 12, padding: 14,
+    borderWidth: 1, borderColor: "rgba(15, 92, 62, 0.18)",
+  },
+  districtEmoji: { fontSize: 20, marginTop: 1 },
+  districtBody: { flex: 1 },
+  districtStat: { fontSize: 13, color: editorial.colors.forest, lineHeight: 18 },
+  districtSub: { fontSize: 12, color: editorial.colors.ink3, marginTop: 2, lineHeight: 16 },
   disclaimer: {
     flexDirection: "row",
     alignItems: "flex-start",

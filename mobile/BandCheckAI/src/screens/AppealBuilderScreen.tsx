@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,8 +21,6 @@ import { formatPostcode } from "../lib/postcode";
 import { isBandLowerThan, type NearbyProperty } from "../lib/scoring";
 import { editorial } from "../theme/editorial";
 import type { EditorialFonts } from "../theme/editorial";
-
-const VOA_URL = "https://www.gov.uk/challenge-council-tax-band";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -49,6 +46,8 @@ type Props = {
   email: string;
   fonts: EditorialFonts;
   onBack: () => void;
+  /** Called when user taps Submit — passes the likelyBand so the walkthrough can use it */
+  onSubmit: (likelyBand: string | undefined) => void;
   onFinish: () => void;
 };
 
@@ -86,9 +85,11 @@ export function AppealBuilderScreen({
   email,
   fonts,
   onBack,
+  onSubmit,
   onFinish,
 }: Props) {
   const [step, setStep] = useState<Step>(1);
+  const [finished, setFinished] = useState(false);
   const formatted = useMemo(() => formatPostcode(postcode), [postcode]);
   const compCount = nearbyProperties.length;
 
@@ -125,7 +126,7 @@ export function AppealBuilderScreen({
   function goNext() {
     if (step === 1 && !canProceedStep1) return;
     if (step === 4) {
-      onFinish();
+      setFinished(true);
       return;
     }
     setStep((s) => Math.min(4, s + 1) as Step);
@@ -139,10 +140,134 @@ export function AppealBuilderScreen({
   const primaryLabel =
     step === 4 ? "Done" : step === 3 ? "Generate pack" : "Continue to review";
 
+  if (finished) {
+    return (
+      <PaperBackground>
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.finishScroll}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero success card */}
+          <View style={styles.finishHeroCard}>
+            <View style={styles.finishGlow} pointerEvents="none" />
+            <View style={styles.finishGlow2} pointerEvents="none" />
+            <View style={styles.finishIconWrap}>
+              <IconCheck size={22} color={editorial.colors.paper} />
+            </View>
+            <Text style={[styles.finishTitle, { fontFamily: fonts.serif }]}>
+              Your appeal{"\n"}pack is{" "}
+              <Text style={[styles.finishTitleEm, { fontFamily: fonts.serifItalic }]}>
+                ready
+              </Text>
+            </Text>
+            {summary.annualSaving > 0 ? (
+              <View style={styles.finishSavingRow}>
+                <Text style={[styles.finishSavingLabel, { fontFamily: fonts.sans }]}>
+                  potential saving
+                </Text>
+                <Text style={[styles.finishSavingValue, { fontFamily: fonts.serif }]}>
+                  {formatGbp(summary.annualSaving)} / yr
+                </Text>
+              </View>
+            ) : null}
+            <Text style={[styles.finishMeta, { fontFamily: fonts.mono }]}>
+              {formatted} · Band {summary.userBand}
+              {summary.likelyBand !== summary.userBand ? ` → ${summary.likelyBand}` : ""}
+            </Text>
+          </View>
+
+          {/* What's included */}
+          <View style={styles.finishSection}>
+            <Text style={[styles.finishSectionLabel, { fontFamily: fonts.sansSemiBold }]}>
+              What&apos;s in your pack
+            </Text>
+            <View style={styles.listCard}>
+              {[
+                { t: `${comparables.length} comparable properties`, d: "Band evidence · Land Registry" },
+                { t: "Draft appeal letter", d: "Pre-filled · ready to submit" },
+                { t: "Your property details", d: `${property.propertyType} · ${property.ownership}` },
+                ...(email ? [{ t: "Evidence pack", d: `Emailed to ${email}` }] : []),
+              ].map((row, i) => (
+                <View key={row.t} style={[styles.listRow, i > 0 && styles.listRowBorder]}>
+                  <View style={[styles.listIcon, styles.listIconAuto]}>
+                    <IconCheck size={13} color={editorial.colors.forest} />
+                  </View>
+                  <View style={styles.listBody}>
+                    <Text style={[styles.listTitle, { fontFamily: fonts.sans }]}>{row.t}</Text>
+                    <Text style={[styles.listSub, { fontFamily: fonts.sans }]}>{row.d}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Next steps */}
+          <View style={styles.finishSection}>
+            <Text style={[styles.finishSectionLabel, { fontFamily: fonts.sansSemiBold }]}>
+              How to submit to the VOA
+            </Text>
+            <View style={styles.card}>
+              {[
+                "Visit gov.uk/challenge-council-tax-band",
+                'Select "Challenge your council tax band"',
+                "Enter your postcode and upload your evidence",
+                "The VOA will respond within 2 months",
+              ].map((s, i) => (
+                <View key={s} style={[styles.stepRow, i > 0 && { borderTopWidth: 0, paddingTop: 4 }]}>
+                  <Text style={[styles.stepNum, { fontFamily: fonts.serif }]}>{i + 1}.</Text>
+                  <Text style={[styles.stepText, { fontFamily: fonts.sans }]}>{s}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* PDF inbox confirmation */}
+          {email ? (
+            <View style={styles.finishSection}>
+              <View style={styles.inboxCard}>
+                <Text style={styles.inboxIcon}>📧</Text>
+                <View style={styles.inboxBody}>
+                  <Text style={[styles.inboxTitle, { fontFamily: fonts.sansSemiBold }]}>
+                    PDF sent to your inbox
+                  </Text>
+                  <Text style={[styles.inboxEmail, { fontFamily: fonts.mono }]} numberOfLines={1}>
+                    {email}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ) : null}
+          <View style={styles.finishSection}>
+            <Pressable
+              onPress={() => onSubmit(
+                summary.likelyBand !== summary.userBand ? summary.likelyBand : undefined
+              )}
+              style={styles.voaButton}
+            >
+              <Text style={[styles.voaButtonText, { fontFamily: fonts.sansSemiBold }]}>
+                How to submit to the VOA →
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Reset */}
+          <View style={[styles.finishSection, { paddingBottom: 48 }]}>
+            <Pressable onPress={onFinish} style={styles.resetLink}>
+              <Text style={[styles.resetLinkText, { fontFamily: fonts.sans }]}>
+                Check another postcode
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </PaperBackground>
+    );
+  }
+
   return (
     <PaperBackground>
       <View style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.flex} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <TopBar
             fonts={fonts}
             left={
@@ -342,8 +467,6 @@ export function AppealBuilderScreen({
 
           {step === 4 ? (
             <View style={styles.block}>
-
-              {/* Success card */}
               <View style={styles.doneCard}>
                 <View style={styles.doneGlow} pointerEvents="none" />
                 <View style={styles.doneHeader}>
@@ -351,7 +474,7 @@ export function AppealBuilderScreen({
                     <IconCheck size={16} color={editorial.colors.paper} />
                   </View>
                   <Text style={[styles.doneTitle, { fontFamily: fonts.serif }]}>
-                    Appeal pack ready
+                    Pack generated
                   </Text>
                 </View>
                 <View style={styles.doneMeta}>
@@ -368,55 +491,39 @@ export function AppealBuilderScreen({
                   ) : null}
                 </View>
               </View>
-
-              {/* What's included */}
-              <View style={styles.listCard}>
-                {[
-                  { t: `${comparables.length} comparable properties`, d: "Band evidence · Land Registry" },
-                  { t: "Draft appeal letter",    d: "Pre-filled · ready to submit" },
-                  { t: "Your property details",  d: `${property.propertyType} · ${property.ownership}` },
-                  ...(email ? [{ t: "Evidence pack", d: `Sent to ${email}` }] : []),
-                ].map((row, i) => (
-                  <View key={row.t} style={[styles.listRow, i > 0 && styles.listRowBorder]}>
-                    <View style={styles.listIconAuto}>
-                      <IconCheck size={13} color={editorial.colors.forest} />
-                    </View>
-                    <View style={styles.listBody}>
-                      <Text style={[styles.listTitle, { fontFamily: fonts.sans }]}>{row.t}</Text>
-                      <Text style={[styles.listSub, { fontFamily: fonts.sans }]}>{row.d}</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              {/* VOA submission steps */}
               <View style={styles.card}>
                 <Text style={[styles.cardKicker, { fontFamily: fonts.sansSemiBold }]}>
-                  How to submit
+                  Submission summary
                 </Text>
-                {[
-                  "Go to gov.uk/challenge-council-tax-band",
-                  "Select "Challenge your council tax band"",
-                  "Enter your postcode and upload your evidence",
-                  "The VOA will respond within 2 months",
-                ].map((step, i) => (
-                  <View key={step} style={styles.stepRow}>
-                    <Text style={[styles.stepNum, { fontFamily: fonts.serif }]}>{i + 1}.</Text>
-                    <Text style={[styles.stepText, { fontFamily: fonts.sans }]}>{step}</Text>
-                  </View>
-                ))}
+                <Text style={[styles.cardValue, { fontFamily: fonts.sans }]}>
+                  {formatted} · Band {summary.userBand}
+                  {summary.likelyBand !== summary.userBand ? ` → ${summary.likelyBand}` : ""}
+                </Text>
+                {email ? (
+                  <Text style={[styles.cardHint, { fontFamily: fonts.mono }]}>{email}</Text>
+                ) : null}
+                <Text style={[styles.cardHint, { fontFamily: fonts.sans }]}>
+                  {property.propertyType} · {property.ownership} · extensions{" "}
+                  {property.extensions}
+                </Text>
               </View>
-
-              {/* VOA button */}
-              <Pressable
-                onPress={() => Linking.openURL(VOA_URL)}
-                style={styles.voaButton}
-              >
-                <Text style={[styles.voaButtonText, { fontFamily: fonts.sansSemiBold }]}>
-                  Submit to VOA →
-                </Text>
-              </Pressable>
-
+              {email ? (
+                <View style={styles.inboxCard}>
+                  <Text style={styles.inboxIcon}>📧</Text>
+                  <View style={styles.inboxBody}>
+                    <Text style={[styles.inboxTitle, { fontFamily: fonts.sansSemiBold }]}>
+                      PDF evidence pack sent
+                    </Text>
+                    <Text style={[styles.inboxEmail, { fontFamily: fonts.mono }]} numberOfLines={1}>
+                      {email}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+              <Text style={[styles.doneHint, { fontFamily: fonts.sans }]}>
+                Tap <Text style={{ fontWeight: "600" }}>Done</Text> to see your full pack and
+                submit to the VOA.
+              </Text>
             </View>
           ) : null}
 
@@ -778,6 +885,14 @@ const styles = StyleSheet.create({
   nextBtn: {
     flex: 1,
   },
+  doneHint: {
+    marginTop: 4,
+    paddingHorizontal: 4,
+    fontSize: 13,
+    lineHeight: 19,
+    color: editorial.colors.ink3,
+    textAlign: "center",
+  },
   doneCard: {
     backgroundColor: editorial.colors.ink,
     borderRadius: 16,
@@ -845,14 +960,135 @@ const styles = StyleSheet.create({
   },
   voaButton: {
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: editorial.colors.hairline,
-    backgroundColor: editorial.colors.paperCard,
-    paddingVertical: 14,
+    backgroundColor: editorial.colors.accent,
+    paddingVertical: 16,
     alignItems: "center",
+    shadowColor: editorial.colors.accent,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   voaButtonText: {
+    fontSize: 15,
+    color: editorial.colors.paper,
+  },
+  // --- Finish screen ---
+  finishScroll: {
+    paddingBottom: 80,
+  },
+  finishHeroCard: {
+    margin: 16,
+    backgroundColor: editorial.colors.ink,
+    borderRadius: 20,
+    padding: 24,
+    overflow: "hidden",
+    position: "relative",
+  },
+  finishGlow: {
+    position: "absolute",
+    top: -40,
+    right: -40,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: "rgba(15, 92, 62, 0.35)",
+  },
+  finishGlow2: {
+    position: "absolute",
+    bottom: -20,
+    left: -20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(200, 67, 28, 0.15)",
+  },
+  finishIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: editorial.colors.forest,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  finishTitle: {
+    fontSize: 38,
+    lineHeight: 40,
+    letterSpacing: -0.76,
+    color: editorial.colors.paper,
+  },
+  finishTitleEm: {
+    color: "rgba(200, 67, 28, 0.9)",
+  },
+  finishSavingRow: {
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(244, 239, 229, 0.12)",
+    gap: 2,
+  },
+  finishSavingLabel: {
+    fontSize: 11,
+    letterSpacing: 0.88,
+    textTransform: "uppercase",
+    color: "rgba(244, 239, 229, 0.5)",
+  },
+  finishSavingValue: {
+    fontSize: 28,
+    letterSpacing: -0.28,
+    color: editorial.colors.paper,
+    marginTop: 2,
+  },
+  finishMeta: {
+    marginTop: 8,
+    fontSize: 11,
+    color: "rgba(244, 239, 229, 0.45)",
+  },
+  finishSection: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+  finishSectionLabel: {
+    fontSize: 11,
+    letterSpacing: 0.88,
+    textTransform: "uppercase",
+    color: editorial.colors.ink3,
+    marginBottom: 10,
+  },
+  inboxCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: editorial.colors.chipForestBg,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(15, 92, 62, 0.20)",
+    padding: 14,
+  },
+  inboxIcon: {
+    fontSize: 26,
+  },
+  inboxBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  inboxTitle: {
     fontSize: 14,
-    color: editorial.colors.ink,
+    color: editorial.colors.forest,
+  },
+  inboxEmail: {
+    fontSize: 12,
+    color: editorial.colors.ink2,
+    marginTop: 2,
+  },
+  resetLink: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  resetLinkText: {
+    fontSize: 14,
+    color: editorial.colors.ink3,
+    textDecorationLine: "underline",
   },
 });

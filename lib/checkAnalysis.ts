@@ -205,6 +205,7 @@ function mostCommonBand(bands: string[]): string {
 
 export type CheckAnalysisData = {
   postcode: string;
+  district: string;
   userBand: string;
   nearbyProperties: NearbyProperty[];
   /**
@@ -286,6 +287,7 @@ export async function getCheckAnalysisForPostcode(
       ok: true,
       data: {
         postcode: normalizedPostcode,
+        district,
         userBand,
         nearbyProperties: finalComps,
         isEstimated: false,
@@ -326,6 +328,7 @@ export async function getCheckAnalysisForPostcode(
       ok: true,
       data: {
         postcode: normalizedPostcode,
+        district,
         userBand,
         nearbyProperties,
         isEstimated: !houseNumber?.trim(), // exact match = confirmed; postcode-only = inferred
@@ -377,6 +380,7 @@ export async function getCheckAnalysisForPostcode(
     ok: true,
     data: {
       postcode: normalizedPostcode,
+      district,
       userBand,
       nearbyProperties,
       isEstimated: true,

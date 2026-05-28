@@ -15,9 +15,16 @@ import { EmailCaptureScreen } from "./src/screens/EmailCaptureScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { SummaryScreen } from "./src/screens/SummaryScreen";
 import { AppealBuilderScreen } from "./src/screens/AppealBuilderScreen";
+import { SubmitWalkthroughScreen } from "./src/screens/SubmitWalkthroughScreen";
+import { AppealTrackerScreen } from "./src/screens/AppealTrackerScreen";
+import {
+  loadAppealRecord,
+  saveAppealRecord,
+  type AppealRecord,
+} from "./src/lib/appealTracker";
 import { editorial } from "./src/theme/editorial";
 
-type Screen = "home" | "compare" | "summary" | "email" | "builder";
+type Screen = "home" | "compare" | "summary" | "email" | "builder" | "submit" | "tracker";
 
 export default function App() {
   const { ready, fonts } = useAppFonts();
@@ -25,6 +32,19 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
   const [checkData, setCheckData] = useState<CheckResponse | null>(null);
   const [email, setEmail] = useState<string>("");
+  const [likelyBand, setLikelyBand] = useState<string | undefined>(undefined);
+  const [hasActiveAppeal, setHasActiveAppeal] = useState(false);
+  const [appealRecord, setAppealRecord] = useState<AppealRecord | null>(null);
+
+  // Check for a persisted appeal on mount
+  useEffect(() => {
+    loadAppealRecord().then((r) => {
+      if (r) {
+        setAppealRecord(r);
+        setHasActiveAppeal(true);
+      }
+    });
+  }, []);
 
   // Refs so PanResponder callbacks always see fresh state (avoids stale closures)
   const screenRef = useRef(screen);
@@ -52,6 +72,7 @@ export default function App() {
           else if (s === "summary") setScreen("compare");
           else if (s === "email") setScreen("summary");
           else if (s === "builder") setScreen("email");
+          else if (s === "submit") setScreen("builder");
         } else {
           // → swipe right → go forward
           if (s === "home" && cd) setScreen("compare");
@@ -108,12 +129,19 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safe} {...panResponder.panHandlers}>
       {screen === "home" ? (
-        <HomeScreen apiBaseUrl={apiBaseUrl} fonts={fonts} onResult={handleCheckResult} />
+        <HomeScreen
+          apiBaseUrl={apiBaseUrl}
+          fonts={fonts}
+          onResult={handleCheckResult}
+          hasActiveAppeal={hasActiveAppeal}
+          onViewAppeal={() => setScreen("tracker")}
+        />
       ) : null}
 
       {screen === "compare" && checkData ? (
         <CompareScreen
           fonts={fonts}
+          apiBaseUrl={apiBaseUrl}
           data={checkData}
           onBack={() => setScreen("home")}
           onContinue={() => setScreen("summary")}
@@ -152,10 +180,66 @@ export default function App() {
           nearbyProperties={checkData.nearbyProperties}
           email={email}
           onBack={() => setScreen("email")}
+          onSubmit={(lb) => {
+            setLikelyBand(lb);
+            setScreen("submit");
+          }}
           onFinish={() => {
             setScreen("home");
             setCheckData(null);
             setEmail("");
+            setLikelyBand(undefined);
+          }}
+        />
+      ) : null}
+
+      {screen === "submit" && checkData ? (
+        <SubmitWalkthroughScreen
+          fonts={fonts}
+          postcode={checkData.postcode}
+          userBand={checkData.userBand}
+          likelyBand={likelyBand}
+          email={email}
+          onDone={async (submitted) => {
+            if (submitted) {
+              const record: AppealRecord = {
+                postcode: checkData.postcode,
+                userBand: checkData.userBand,
+                likelyBand,
+                annualSaving: checkData.annualSaving,
+                email,
+                status: "submitted",
+                submittedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+              // Save to state immediately — file system persists in background
+              setAppealRecord(record);
+              setHasActiveAppeal(true);
+              setCheckData(null);
+              setEmail("");
+              setLikelyBand(undefined);
+              setScreen("tracker");
+              // Background persistence — UI doesn't wait for this
+              saveAppealRecord(record).catch(() => {});
+            } else {
+              setScreen("home");
+              setCheckData(null);
+              setEmail("");
+              setLikelyBand(undefined);
+            }
+          }}
+        />
+      ) : null}
+
+      {screen === "tracker" && appealRecord ? (
+        <AppealTrackerScreen
+          fonts={fonts}
+          initialRecord={appealRecord}
+          onRecordChange={(updated) => setAppealRecord(updated)}
+          onDone={() => {
+            setHasActiveAppeal(false);
+            setAppealRecord(null);
+            setScreen("home");
           }}
         />
       ) : null}

@@ -2,10 +2,12 @@ import type { NearbyProperty } from "./scoring";
 
 export type CheckResponse = {
   postcode: string;
+  district: string;
   userBand: string;
   nearbyProperties: NearbyProperty[];
   /** Band is statistically modelled — not live VOA data. Always verify. */
   isEstimated?: boolean;
+  annualSaving?: number;
 };
 
 export type LeadPayload = {
@@ -75,6 +77,30 @@ export async function submitLead(
   } catch (e) {
     const message = e instanceof Error ? e.message : "Network error";
     return { ok: false, error: message };
+  }
+}
+
+export type DistrictStats = {
+  district: string;
+  totalChecked: number;
+  strongCaseCount: number;
+  strongCasePct: number;
+  bandBreakdown: Record<string, number>;
+};
+
+export async function fetchDistrictStats(
+  apiBaseUrl: string,
+  district: string,
+): Promise<DistrictStats | null> {
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/api/stats?district=${encodeURIComponent(district)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as DistrictStats;
+  } catch {
+    return null;
   }
 }
 

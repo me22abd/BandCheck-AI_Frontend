@@ -3,6 +3,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,6 +27,8 @@ type Props = {
   apiBaseUrl: string;
   fonts: EditorialFonts;
   onResult: (data: CheckResponse) => void;
+  hasActiveAppeal?: boolean;
+  onViewAppeal?: () => void;
 };
 
 const HOW_IT_WORKS = [
@@ -52,7 +55,7 @@ const STATS = [
   { v: "89%", l: "success rate" },
 ];
 
-export function HomeScreen({ apiBaseUrl, fonts, onResult }: Props) {
+export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal }: Props) {
   const [postcode, setPostcode] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -107,6 +110,17 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult }: Props) {
               </IconButton>
             }
           />
+
+          {/* Active appeal banner */}
+          {hasActiveAppeal ? (
+            <Pressable style={styles.appealBanner} onPress={onViewAppeal}>
+              <View style={styles.appealBannerDot} />
+              <Text style={[styles.appealBannerText, { fontFamily: fonts.sans }]}>
+                You have an active appeal in progress
+              </Text>
+              <Text style={[styles.appealBannerArrow, { fontFamily: fonts.sans }]}>→</Text>
+            </Pressable>
+          ) : null}
 
           {/* Hero */}
           <View style={styles.hero}>
@@ -248,6 +262,23 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   scroll: {
     paddingBottom: 100,
+  },
+  appealBanner: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    marginHorizontal: 16, marginBottom: 4, marginTop: 4,
+    backgroundColor: editorial.colors.chipForestBg,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, borderColor: "rgba(15, 92, 62, 0.18)",
+  },
+  appealBannerDot: {
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: editorial.colors.forest,
+  },
+  appealBannerText: {
+    flex: 1, fontSize: 13, color: editorial.colors.forest,
+  },
+  appealBannerArrow: {
+    fontSize: 13, color: editorial.colors.forest,
   },
   hero: {
     paddingHorizontal: 24,

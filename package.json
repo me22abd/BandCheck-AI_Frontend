@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@types/pdfkit": "^0.17.6",
+    "@types/pg": "^8.20.0",
     "cheerio": "^1.2.0",
     "geist": "^1.7.1",
     "lucide-react": "^1.8.0",
     "next": "^15.1.0",
     "pdfkit": "^0.18.0",
+    "pg": "^8.21.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^6.12.4"
