@@ -217,7 +217,8 @@ export async function POST(request: NextRequest) {
   }
 
   const resend = new Resend(apiKey);
-  const fromAddress = "BandCheck AI <onboarding@resend.dev>";
+  const fromAddress =
+    process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
 
   try {
     const { error } = await resend.emails.send({
