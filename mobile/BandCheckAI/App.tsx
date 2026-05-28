@@ -1,6 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState, useEffect } from "react";
-import { ActivityIndicator, Linking, SafeAreaView, StyleSheet, View } from "react-native";
+import { useMemo, useState, useEffect, useRef } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  PanResponder,
+  SafeAreaView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useAppFonts } from "./src/hooks/useAppFonts";
 import { getApiBaseUrl, type CheckResponse } from "./src/lib/api";
 import { CompareScreen } from "./src/screens/CompareScreen";
@@ -18,6 +25,43 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
   const [checkData, setCheckData] = useState<CheckResponse | null>(null);
   const [email, setEmail] = useState<string>("");
+
+  // Refs so PanResponder callbacks always see fresh state (avoids stale closures)
+  const screenRef = useRef(screen);
+  const checkDataRef = useRef(checkData);
+  const emailRef = useRef(email);
+  useEffect(() => { screenRef.current = screen; }, [screen]);
+  useEffect(() => { checkDataRef.current = checkData; }, [checkData]);
+  useEffect(() => { emailRef.current = email; }, [email]);
+
+  // Swipe left = back, swipe right = forward
+  const panResponder = useRef(
+    PanResponder.create({
+      // Only capture a clearly horizontal movement
+      onMoveShouldSetPanResponder: (_, gs) =>
+        Math.abs(gs.dx) > 12 && Math.abs(gs.dx) > Math.abs(gs.dy) * 2,
+      onPanResponderRelease: (_, gs) => {
+        if (Math.abs(gs.dx) < 50) return;
+        const s = screenRef.current;
+        const cd = checkDataRef.current;
+        const em = emailRef.current;
+
+        if (gs.dx < 0) {
+          // ← swipe left → go backward
+          if (s === "compare") setScreen("home");
+          else if (s === "summary") setScreen("compare");
+          else if (s === "email") setScreen("summary");
+          else if (s === "builder") setScreen("email");
+        } else {
+          // → swipe right → go forward
+          if (s === "home" && cd) setScreen("compare");
+          else if (s === "compare") setScreen("summary");
+          else if (s === "summary") setScreen("email");
+          else if (s === "email" && em) setScreen("builder");
+        }
+      },
+    })
+  ).current;
 
   function handleCheckResult(data: CheckResponse) {
     setCheckData(data);
@@ -62,7 +106,7 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} {...panResponder.panHandlers}>
       {screen === "home" ? (
         <HomeScreen apiBaseUrl={apiBaseUrl} fonts={fonts} onResult={handleCheckResult} />
       ) : null}
