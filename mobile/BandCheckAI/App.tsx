@@ -34,6 +34,7 @@ export default function App() {
   const [email, setEmail] = useState<string>("");
   const [likelyBand, setLikelyBand] = useState<string | undefined>(undefined);
   const [hasActiveAppeal, setHasActiveAppeal] = useState(false);
+  const [lastPostcode, setLastPostcode] = useState<string | undefined>(undefined);
   const [appealRecord, setAppealRecord] = useState<AppealRecord | null>(null);
 
   // Check for a persisted appeal on mount
@@ -86,6 +87,7 @@ export default function App() {
 
   function handleCheckResult(data: CheckResponse) {
     setCheckData(data);
+    setLastPostcode(data.postcode);
     setScreen("compare");
   }
 
@@ -135,6 +137,7 @@ export default function App() {
           onResult={handleCheckResult}
           hasActiveAppeal={hasActiveAppeal}
           onViewAppeal={() => setScreen("tracker")}
+          lastPostcode={lastPostcode}
         />
       ) : null}
 

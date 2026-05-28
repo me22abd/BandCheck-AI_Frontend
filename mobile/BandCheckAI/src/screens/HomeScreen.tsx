@@ -5,6 +5,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TextInput,
@@ -29,6 +30,7 @@ type Props = {
   onResult: (data: CheckResponse) => void;
   hasActiveAppeal?: boolean;
   onViewAppeal?: () => void;
+  lastPostcode?: string;
 };
 
 const HOW_IT_WORKS = [
@@ -55,7 +57,7 @@ const STATS = [
   { v: "89%", l: "success rate" },
 ];
 
-export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal }: Props) {
+export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal, lastPostcode }: Props) {
   const [postcode, setPostcode] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -243,6 +245,31 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onVie
             </View>
           </View>
 
+          {/* Share with a neighbour */}
+          {lastPostcode ? (
+            <Pressable
+              style={styles.shareNeighbourBtn}
+              onPress={() => {
+                const compact = lastPostcode.replace(/\s+/g, "").toUpperCase();
+                Share.share({
+                  message: `I just checked my council tax band with BandCheck AI — turns out I might be overpaying! Check yours free (takes 30 seconds): https://www.bandcheckai.co.uk/?ref=${compact}`,
+                  title: "Check your council tax band",
+                });
+              }}
+            >
+              <Text style={styles.shareNeighbourEmoji}>🏘️</Text>
+              <View style={styles.shareNeighbourBody}>
+                <Text style={[styles.shareNeighbourTitle, { fontFamily: fonts.sansSemiBold }]}>
+                  Share with a neighbour
+                </Text>
+                <Text style={[styles.shareNeighbourSub, { fontFamily: fonts.sans }]}>
+                  If you're overpaying, they might be too
+                </Text>
+              </View>
+              <Text style={[styles.shareNeighbourArrow, { fontFamily: fonts.sans }]}>↗</Text>
+            </Pressable>
+          ) : null}
+
           {/* Disclaimer bar */}
           <View style={styles.trustBar}>
             <Text style={[styles.trustKicker, { fontFamily: fonts.sansSemiBold }]}>
@@ -263,6 +290,18 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 100,
   },
+  shareNeighbourBtn: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    marginHorizontal: 16, marginTop: 16, marginBottom: 4,
+    backgroundColor: editorial.colors.paperCard,
+    borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
+    borderWidth: 1, borderColor: editorial.colors.hairline,
+  },
+  shareNeighbourEmoji: { fontSize: 26 },
+  shareNeighbourBody: { flex: 1 },
+  shareNeighbourTitle: { fontSize: 14, color: editorial.colors.ink },
+  shareNeighbourSub: { fontSize: 12, color: editorial.colors.ink3, marginTop: 2 },
+  shareNeighbourArrow: { fontSize: 18, color: editorial.colors.ink3 },
   appealBanner: {
     flexDirection: "row", alignItems: "center", gap: 8,
     marginHorizontal: 16, marginBottom: 4, marginTop: 4,
