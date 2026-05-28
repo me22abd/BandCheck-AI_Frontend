@@ -107,14 +107,15 @@ export async function scrapeGovCouncilTaxBand(
   }
 
   // Start page: often redirects to a session-specific journey
-  const start = await fetchHtml("https://www.tax.service.gov.uk/check-your-council-tax-band/search");
+  // NOTE: The GOV.UK start button links to /check-council-tax-band/search
+  const start = await fetchHtml("https://www.tax.service.gov.uk/check-council-tax-band/search");
   if (start.status >= 400) {
     return { ok: false, reason: `GOV checker start failed (HTTP ${start.status})` };
   }
 
   const $start = cheerio.load(start.html);
   const form = $start("form").first();
-  const actionRaw = form.attr("action") || "/check-your-council-tax-band/search";
+  const actionRaw = form.attr("action") || "/check-council-tax-band/search";
   const action = actionRaw.startsWith("http")
     ? actionRaw
     : new URL(actionRaw, start.url).toString();
@@ -162,7 +163,7 @@ export async function scrapeGovCouncilTaxBand(
       text: $(el).text().trim(),
     }))
     .get()
-    .filter((l) => l.href && l.text && /check-your-council-tax-band/i.test(l.href));
+    .filter((l) => l.href && l.text && /check-council-tax-band/i.test(l.href));
 
   if (!links.length) {
     return { ok: false, reason: "GOV checker: could not find band or address links" };
