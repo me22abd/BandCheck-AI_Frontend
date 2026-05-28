@@ -20,7 +20,9 @@ import { SmallChip } from "../components/editorial/SmallChip";
 import { TopBar } from "../components/editorial/TopBar";
 import { Wordmark } from "../components/editorial/Wordmark";
 import { checkPostcode, type CheckResponse } from "../lib/api";
-import { normalizePostcode } from "../lib/postcode";
+import { normalizePostcode, formatPostcode } from "../lib/postcode";
+import type { SavedCase } from "../lib/casesStore";
+import { STATUS_LABELS, STATUS_COLORS } from "../lib/casesStore";
 import { editorial } from "../theme/editorial";
 import type { EditorialFonts } from "../theme/editorial";
 
@@ -31,6 +33,8 @@ type Props = {
   hasActiveAppeal?: boolean;
   onViewAppeal?: () => void;
   lastPostcode?: string;
+  savedCase?: SavedCase | null;
+  onResume?: (sc: SavedCase) => void;
 };
 
 const HOW_IT_WORKS = [
@@ -57,7 +61,7 @@ const STATS = [
   { v: "89%", l: "success rate" },
 ];
 
-export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal, lastPostcode }: Props) {
+export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal, lastPostcode, savedCase, onResume }: Props) {
   const [postcode, setPostcode] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -121,6 +125,24 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onVie
                 You have an active appeal in progress
               </Text>
               <Text style={[styles.appealBannerArrow, { fontFamily: fonts.sans }]}>→</Text>
+            </Pressable>
+          ) : null}
+
+          {/* Continue card — resume an in-progress check */}
+          {savedCase && onResume ? (
+            <Pressable style={styles.continueCard} onPress={() => onResume(savedCase)}>
+              <View style={styles.continueLeft}>
+                <View style={[styles.continueDot, { backgroundColor: STATUS_COLORS[savedCase.status] }]} />
+                <View>
+                  <Text style={[styles.continueTitle, { fontFamily: fonts.sansSemiBold }]}>
+                    Continue — {formatPostcode(savedCase.postcode)}
+                  </Text>
+                  <Text style={[styles.continueSub, { fontFamily: fonts.sans }]}>
+                    {STATUS_LABELS[savedCase.status]} · Band {savedCase.userBand}
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.continueArrow, { fontFamily: fonts.sans }]}>→</Text>
             </Pressable>
           ) : null}
 
@@ -290,6 +312,17 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 100,
   },
+  continueCard: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    marginHorizontal: 16, marginBottom: 8, marginTop: 4,
+    backgroundColor: editorial.colors.ink,
+    borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
+  },
+  continueLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+  continueDot: { width: 8, height: 8, borderRadius: 4 },
+  continueTitle: { fontSize: 14, color: editorial.colors.paper },
+  continueSub: { fontSize: 11, color: "rgba(244,239,229,0.55)", marginTop: 2 },
+  continueArrow: { fontSize: 18, color: "rgba(244,239,229,0.6)" },
   shareNeighbourBtn: {
     flexDirection: "row", alignItems: "center", gap: 12,
     marginHorizontal: 16, marginTop: 16, marginBottom: 4,
