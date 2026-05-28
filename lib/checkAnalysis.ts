@@ -1,3 +1,4 @@
+import { scrapeGovCouncilTaxBand } from "./govCouncilTaxScraper";
 import { lookupVoaBands } from "./voaLookup";
 import type { NearbyProperty } from "./scoring";
 
@@ -248,7 +249,28 @@ export async function getCheckAnalysisForPostcode(
   const lookup = lookupOutcome.result;
   const district = lookup.admin_district?.trim() || "Local area";
 
-  // Step 2: try real VOA data
+  // Step 2: primary free source — scrape GOV checker
+  const gov = await scrapeGovCouncilTaxBand(normalizedPostcode, houseNumber);
+  if (gov.ok) {
+    // We only know the band for the selected property; comparables still come from
+    // provider APIs when available, otherwise from the statistical fallback.
+    const voaForComps = await lookupVoaBands(normalizedPostcode);
+    const nearbyProperties: NearbyProperty[] = voaForComps.ok
+      ? voaForComps.properties.map((p) => ({ address: p.address, band: p.band }))
+      : [];
+
+    return {
+      ok: true,
+      data: {
+        postcode: normalizedPostcode,
+        userBand: gov.band,
+        nearbyProperties,
+        isEstimated: false,
+      },
+    };
+  }
+
+  // Step 3: secondary sources — provider APIs
   const voaResult = await lookupVoaBands(normalizedPostcode, houseNumber);
 
   if (voaResult.ok && voaResult.properties.length > 0) {
@@ -287,10 +309,13 @@ export async function getCheckAnalysisForPostcode(
     };
   }
 
-  // Step 3: statistical fallback
+  // Step 4: statistical fallback
   // Log why real data wasn't used so the operator can diagnose it
-  if (voaResult.ok === false && voaResult.reason !== "HOMEDATA_API_KEY not configured") {
-    console.warn(`[checkAnalysis] VOA lookup failed for ${normalizedPostcode}: ${voaResult.reason}`);
+  if (gov.ok === false) {
+    console.warn(`[checkAnalysis] GOV scrape failed for ${normalizedPostcode}: ${gov.reason}`);
+  }
+  if (voaResult.ok === false) {
+    console.warn(`[checkAnalysis] Provider lookup failed for ${normalizedPostcode}: ${voaResult.reason}`);
   }
 
   const areaKey = district;
