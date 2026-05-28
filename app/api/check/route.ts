@@ -36,8 +36,13 @@ export async function POST(request: NextRequest) {
   }
 
   const postcode = normalizePostcode(String(postcodeRaw));
+  const houseNumberRaw = (body as { houseNumber?: unknown }).houseNumber;
+  const houseNumber =
+    houseNumberRaw !== undefined && houseNumberRaw !== null && String(houseNumberRaw).trim() !== ""
+      ? String(houseNumberRaw).trim()
+      : undefined;
 
-  const result = await getCheckAnalysisForPostcode(postcode);
+  const result = await getCheckAnalysisForPostcode(postcode, houseNumber);
   if (!result.ok) {
     return NextResponse.json(
       { error: result.message },

@@ -54,6 +54,7 @@ const STATS = [
 
 export function HomeScreen({ apiBaseUrl, fonts, onResult }: Props) {
   const [postcode, setPostcode] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   const compact = useMemo(() => normalizePostcode(postcode), [postcode]);
@@ -71,7 +72,11 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult }: Props) {
 
     setLoading(true);
     try {
-      const data = await checkPostcode(apiBaseUrl, compact);
+      const data = await checkPostcode(
+        apiBaseUrl,
+        compact,
+        houseNumber.trim() || undefined,
+      );
       onResult(data);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -137,12 +142,31 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult }: Props) {
                   autoCorrect={false}
                   placeholder="SW11 4NX"
                   placeholderTextColor={editorial.colors.ink3}
-                  returnKeyType="go"
+                  returnKeyType="next"
                   onSubmitEditing={onCheck}
                   style={[styles.input, { fontFamily: fonts.monoMedium }]}
                 />
                 <BandPill letter="?" fonts={fonts} />
               </View>
+
+              <Text style={[styles.fieldLabel, { fontFamily: fonts.sansSemiBold, marginTop: 12 }]}>
+                House number{" "}
+                <Text style={[styles.fieldLabelOpt, { fontFamily: fonts.sans }]}>(optional — for exact band)</Text>
+              </Text>
+              <View style={styles.houseRow}>
+                <TextInput
+                  value={houseNumber}
+                  onChangeText={setHouseNumber}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  placeholder="e.g. 14 or Flat 2"
+                  placeholderTextColor={editorial.colors.ink3}
+                  returnKeyType="go"
+                  onSubmitEditing={onCheck}
+                  style={[styles.houseInput, { fontFamily: fonts.mono }]}
+                />
+              </View>
+
               <EditorialPrimaryButton
                 label="Check my band"
                 loading={loading}
@@ -294,6 +318,26 @@ const styles = StyleSheet.create({
     letterSpacing: 0.88,
     color: editorial.colors.ink,
     padding: 0,
+  },
+  fieldLabelOpt: {
+    fontSize: 10,
+    color: editorial.colors.ink3,
+    textTransform: "none",
+    letterSpacing: 0,
+  },
+  houseRow: {
+    marginTop: 6,
+  },
+  houseInput: {
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderRadius: editorial.radius.md,
+    backgroundColor: editorial.colors.inputBg,
+    borderWidth: 1,
+    borderColor: editorial.colors.hairline,
+    fontSize: 14,
+    color: editorial.colors.ink,
+    letterSpacing: 0.14,
   },
   cta: {
     marginTop: 12,

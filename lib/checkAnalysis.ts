@@ -1,124 +1,10 @@
+import { lookupVoaBands } from "./voaLookup";
 import type { NearbyProperty } from "./scoring";
 
 const POSTCODES_IO = "https://api.postcodes.io";
 const FETCH_TIMEOUT_MS = 12_000;
-const NEARBY_COUNT = 3;
-const NEAREST_LIMIT = 24;
-const NEAREST_RADIUS_M = 1200;
 
-const BAND_LETTERS = "ABCDEFGH";
-
-function hashString(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h);
-}
-
-function bandIndex(letter: string): number {
-  const c = letter.toUpperCase().replace(/[^A-H]/g, "").charAt(0);
-  const i = BAND_LETTERS.indexOf(c);
-  return i === -1 ? 3 : i;
-}
-
-function indexToBand(i: number): string {
-  return BAND_LETTERS[Math.min(7, Math.max(0, i))] ?? "D";
-}
-
-/**
- * UK-weighted band (median around D), blended with area so nearby postcodes cluster.
- * Modelled — not VOA data.
- */
-function bandFromSeedWithArea(seed: string, areaKey: string): string {
-  const blended = hashString(`${seed}|${areaKey}`) % 100;
-  const areaNudge = (hashString(`area:${areaKey}`) % 17) - 8;
-  const r = Math.min(99, Math.max(0, blended + Math.floor(areaNudge / 2)));
-  if (r < 5) return "A";
-  if (r < 12) return "B";
-  if (r < 28) return "C";
-  if (r < 55) return "D";
-  if (r < 78) return "E";
-  if (r < 92) return "F";
-  if (r < 98) return "G";
-  return "H";
-}
-
-/** Neighbour bands cluster near the user’s band (same street/area realism). */
-function bandForNeighbour(
-  neighbourPc: string,
-  areaKey: string,
-  index: number,
-  userBand: string,
-): string {
-  const u = bandIndex(userBand);
-  const h = hashString(`${neighbourPc}|${areaKey}|${index}`);
-  if (h % 100 < 72) {
-    const delta = (h % 3) - 1;
-    return indexToBand(u + delta);
-  }
-  return bandFromSeedWithArea(`${neighbourPc}|n`, areaKey);
-}
-
-const STREET_NAMES = [
-  "Victoria",
-  "Church",
-  "Park",
-  "Manor",
-  "Queen's",
-  "King",
-  "Mill",
-  "London",
-  "Green",
-  "Oxford",
-  "Station",
-  "High",
-  "Elm",
-  "Oak",
-  "Ash",
-  "Cedar",
-  "Maple",
-  "Rose",
-  "Bridge",
-  "Water",
-];
-
-const STREET_SUFFIXES = [
-  "Road",
-  "Street",
-  "Avenue",
-  "Close",
-  "Lane",
-  "Drive",
-  "Way",
-  "Terrace",
-  "Place",
-  "Grove",
-  "Crescent",
-  "Mews",
-  "Walk",
-  "Yard",
-  "Row",
-  "Rise",
-  "View",
-  "Hill",
-];
-
-function normalizePc(pc: string): string {
-  return pc.replace(/\s+/g, "").toUpperCase();
-}
-
-function formatAddress(
-  neighbourPostcode: string,
-  index: number,
-  district: string,
-): string {
-  const h = hashString(neighbourPostcode + String(index));
-  const n = 1 + (h % 99);
-  const name = STREET_NAMES[h % STREET_NAMES.length];
-  const suffix = STREET_SUFFIXES[(h >>> 4) % STREET_SUFFIXES.length];
-  return `${n} ${name} ${suffix}, ${district}`;
-}
+// ─── postcodes.io helpers ─────────────────────────────────────────────────────
 
 type LookupResult = {
   postcode: string;
@@ -154,19 +40,12 @@ async function lookupPostcode(
   try {
     const res = await fetch(
       `${POSTCODES_IO}/postcodes/${encodeURIComponent(postcode)}`,
-      {
-        signal: controller.signal,
-        cache: "no-store",
-      },
+      { signal: controller.signal, cache: "no-store" },
     );
     clearTimeout(t);
     const json = (await res.json()) as PostcodesIoLookup;
-    if (res.status === 404 || json.status === 404) {
-      return { kind: "not_found" };
-    }
-    if (!res.ok || json.status !== 200 || !json.result) {
-      return { kind: "error" };
-    }
+    if (res.status === 404 || json.status === 404) return { kind: "not_found" };
+    if (!res.ok || json.status !== 200 || !json.result) return { kind: "error" };
     return { kind: "ok", result: json.result };
   } catch {
     clearTimeout(t);
@@ -180,8 +59,8 @@ async function nearestPostcodes(lat: number, lon: number): Promise<NearestEntry[
   const q = new URLSearchParams({
     lat: String(lat),
     lon: String(lon),
-    limit: String(NEAREST_LIMIT),
-    radius: String(NEAREST_RADIUS_M),
+    limit: "24",
+    radius: "1200",
   });
   try {
     const res = await fetch(`${POSTCODES_IO}/postcodes?${q.toString()}`, {
@@ -190,9 +69,7 @@ async function nearestPostcodes(lat: number, lon: number): Promise<NearestEntry[
     });
     clearTimeout(t);
     const json = (await res.json()) as PostcodesIoNearest;
-    if (!res.ok || json.status !== 200 || !json.result?.length) {
-      return [];
-    }
+    if (!res.ok || json.status !== 200 || !json.result?.length) return [];
     return json.result;
   } catch {
     clearTimeout(t);
@@ -200,21 +77,89 @@ async function nearestPostcodes(lat: number, lon: number): Promise<NearestEntry[
   }
 }
 
-function haversineMiles(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
-  const R = 3958.7613; // Earth radius in miles
+  const R = 3958.7613;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function normalizePc(pc: string): string {
+  return pc.replace(/\s+/g, "").toUpperCase();
+}
+
+// ─── statistical fallback (used when HOMEDATA_API_KEY is not set) ─────────────
+
+const BAND_LETTERS = "ABCDEFGH";
+
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function bandIndex(letter: string): number {
+  const c = letter.toUpperCase().replace(/[^A-H]/g, "").charAt(0);
+  const i = BAND_LETTERS.indexOf(c);
+  return i === -1 ? 3 : i;
+}
+
+function indexToBand(i: number): string {
+  return BAND_LETTERS[Math.min(7, Math.max(0, i))] ?? "D";
+}
+
+/** Statistical model — NOT VOA data. Used only as fallback. */
+function bandFromSeedWithArea(seed: string, areaKey: string): string {
+  const blended = hashString(`${seed}|${areaKey}`) % 100;
+  const areaNudge = (hashString(`area:${areaKey}`) % 17) - 8;
+  const r = Math.min(99, Math.max(0, blended + Math.floor(areaNudge / 2)));
+  if (r < 5) return "A";
+  if (r < 12) return "B";
+  if (r < 28) return "C";
+  if (r < 55) return "D";
+  if (r < 78) return "E";
+  if (r < 92) return "F";
+  if (r < 98) return "G";
+  return "H";
+}
+
+function bandForNeighbour(
+  neighbourPc: string,
+  areaKey: string,
+  index: number,
+  userBand: string,
+): string {
+  const u = bandIndex(userBand);
+  const h = hashString(`${neighbourPc}|${areaKey}|${index}`);
+  if (h % 100 < 72) {
+    const delta = (h % 3) - 1;
+    return indexToBand(u + delta);
+  }
+  return bandFromSeedWithArea(`${neighbourPc}|n`, areaKey);
+}
+
+const STREET_NAMES = [
+  "Victoria", "Church", "Park", "Manor", "Queen's", "King", "Mill", "London",
+  "Green", "Oxford", "Station", "High", "Elm", "Oak", "Ash", "Cedar",
+  "Maple", "Rose", "Bridge", "Water",
+];
+const STREET_SUFFIXES = [
+  "Road", "Street", "Avenue", "Close", "Lane", "Drive", "Way", "Terrace",
+  "Place", "Grove", "Crescent", "Mews", "Walk", "Yard", "Row", "Rise", "View", "Hill",
+];
+
+function formatAddress(neighbourPostcode: string, index: number, district: string): string {
+  const h = hashString(neighbourPostcode + String(index));
+  const n = 1 + (h % 99);
+  const name = STREET_NAMES[h % STREET_NAMES.length];
+  const suffix = STREET_SUFFIXES[(h >>> 4) % STREET_SUFFIXES.length];
+  return `${n} ${name} ${suffix}, ${district}`;
 }
 
 function padSyntheticNeighbours(
@@ -237,34 +182,60 @@ function padSyntheticNeighbours(
   return out.slice(0, target);
 }
 
+// ─── most common band helper ──────────────────────────────────────────────────
+
+function mostCommonBand(bands: string[]): string {
+  const counts: Record<string, number> = {};
+  for (const b of bands) {
+    counts[b] = (counts[b] ?? 0) + 1;
+  }
+  let best = "D";
+  let bestCount = 0;
+  for (const [band, count] of Object.entries(counts)) {
+    if (count > bestCount) {
+      best = band;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+// ─── public API ───────────────────────────────────────────────────────────────
+
 export type CheckAnalysisData = {
   postcode: string;
   userBand: string;
   nearbyProperties: NearbyProperty[];
   /**
-   * Always true — band and comparables are statistically modelled from
-   * area data, NOT live VOA records. Users must verify at gov.uk/council-tax-bands.
+   * false = band confirmed from live VOA data (Homedata API).
+   * true  = band is statistically modelled — must be verified at gov.uk/council-tax-bands.
    */
-  isEstimated: true;
+  isEstimated: boolean;
 };
 
 /**
- * Validates postcode via postcodes.io (lat/lng), finds nearest postcodes,
- * and builds plausible addresses + modelled council tax bands (not VOA).
+ * Main entry point for the /api/check route.
+ *
+ * Strategy:
+ * 1. Validate postcode via postcodes.io.
+ * 2. If HOMEDATA_API_KEY is set, look up real VOA bands for every property at
+ *    the postcode. The user's band is derived from their specific house (if
+ *    `houseNumber` is supplied) or inferred as the most common band at the
+ *    postcode. Comparables are real properties from the same postcode.
+ * 3. If the Homedata API is unavailable/unconfigured, fall back to the
+ *    statistical model and return isEstimated: true.
  */
 export async function getCheckAnalysisForPostcode(
   normalizedPostcode: string,
+  houseNumber?: string,
 ): Promise<
   | { ok: true; data: CheckAnalysisData }
   | { ok: false; status: number; message: string }
 > {
+  // Step 1: validate postcode
   const lookupOutcome = await lookupPostcode(normalizedPostcode);
   if (lookupOutcome.kind === "not_found") {
-    return {
-      ok: false,
-      status: 400,
-      message: "Invalid or unknown UK postcode",
-    };
+    return { ok: false, status: 400, message: "Invalid or unknown UK postcode" };
   }
   if (lookupOutcome.kind === "error") {
     return {
@@ -276,12 +247,57 @@ export async function getCheckAnalysisForPostcode(
 
   const lookup = lookupOutcome.result;
   const district = lookup.admin_district?.trim() || "Local area";
+
+  // Step 2: try real VOA data
+  const voaResult = await lookupVoaBands(normalizedPostcode, houseNumber);
+
+  if (voaResult.ok && voaResult.properties.length > 0) {
+    // ── Real VOA data path ────────────────────────────────────────────────────
+    const props = voaResult.properties;
+
+    // Determine the user's band:
+    // - If we have a house number, find the matching property
+    // - Otherwise, use the most common band at the postcode (still real data,
+    //   just not guaranteed to be for their specific unit)
+    let userBand: string;
+    if (houseNumber?.trim()) {
+      const normalized = houseNumber.trim().toLowerCase();
+      const match = props.find((p) =>
+        p.address.toLowerCase().includes(normalized),
+      );
+      userBand = match?.band ?? mostCommonBand(props.map((p) => p.band));
+    } else {
+      userBand = mostCommonBand(props.map((p) => p.band));
+    }
+
+    // Build comparables from the real VOA data (all other properties at the postcode)
+    const nearbyProperties: NearbyProperty[] = props.map((p) => ({
+      address: p.address,
+      band: p.band,
+    }));
+
+    return {
+      ok: true,
+      data: {
+        postcode: normalizedPostcode,
+        userBand,
+        nearbyProperties,
+        isEstimated: !houseNumber?.trim(), // exact match = confirmed; postcode-only = inferred
+      },
+    };
+  }
+
+  // Step 3: statistical fallback
+  // Log why real data wasn't used so the operator can diagnose it
+  if (voaResult.ok === false && voaResult.reason !== "HOMEDATA_API_KEY not configured") {
+    console.warn(`[checkAnalysis] VOA lookup failed for ${normalizedPostcode}: ${voaResult.reason}`);
+  }
+
   const areaKey = district;
   const userBand = bandFromSeedWithArea(normalizedPostcode, areaKey);
 
   const nearest = await nearestPostcodes(lookup.latitude, lookup.longitude);
   const selfNorm = normalizePc(lookup.postcode);
-
   const seen = new Set<string>();
   const rows: NearbyProperty[] = [];
 
@@ -291,10 +307,7 @@ export async function getCheckAnalysisForPostcode(
     if (pn === selfNorm || seen.has(pn)) continue;
     seen.add(pn);
     const distanceMiles =
-      typeof n.latitude === "number" &&
-      typeof n.longitude === "number" &&
-      typeof lookup.latitude === "number" &&
-      typeof lookup.longitude === "number"
+      typeof n.latitude === "number" && typeof n.longitude === "number"
         ? haversineMiles(lookup.latitude, lookup.longitude, n.latitude, n.longitude)
         : undefined;
     rows.push({
@@ -302,18 +315,12 @@ export async function getCheckAnalysisForPostcode(
       band: bandForNeighbour(pn, areaKey, rows.length, userBand),
       distanceMiles,
     });
-    if (rows.length >= NEARBY_COUNT) break;
+    if (rows.length >= 3) break;
   }
 
   const nearbyProperties =
-    rows.length < NEARBY_COUNT
-      ? padSyntheticNeighbours(
-          NEARBY_COUNT,
-          normalizedPostcode,
-          district,
-          userBand,
-          rows,
-        )
+    rows.length < 3
+      ? padSyntheticNeighbours(3, normalizedPostcode, district, userBand, rows)
       : rows;
 
   return {

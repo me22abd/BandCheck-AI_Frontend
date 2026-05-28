@@ -94,11 +94,12 @@ export function normalizeApiBaseUrl(raw: string): string {
 export async function checkPostcode(
   apiBaseUrl: string,
   postcode: string,
+  houseNumber?: string,
 ): Promise<CheckResponse> {
   const res = await fetch(`${apiBaseUrl}/api/check`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ postcode }),
+    body: JSON.stringify({ postcode, ...(houseNumber ? { houseNumber } : {}) }),
   });
   if (!res.ok) {
     let message = `HTTP ${res.status}`;
