@@ -270,14 +270,45 @@ export function buildEvidencePdfBuffer(input: EvidencePackInput): Promise<Buffer
       doc.moveDown(0.3);
     });
 
+    // ── Disclaimer banner ────────────────────────────────────────────────────
+    const disclaimerY = doc.y + 12;
+    doc
+      .roundedRect(MARGIN, disclaimerY, INNER, 54, 8)
+      .fillColor("#FFF8F5")
+      .fill();
+    doc
+      .roundedRect(MARGIN, disclaimerY, INNER, 54, 8)
+      .lineWidth(0.75)
+      .strokeColor("rgba(200,67,28,0.30)")
+      .stroke();
+    doc
+      .fontSize(8.5)
+      .font("Helvetica-Bold")
+      .fillColor(RUST)
+      .text("⚠  IMPORTANT — ESTIMATED DATA ONLY", MARGIN + 12, disclaimerY + 9, {
+        characterSpacing: 0.5,
+        width: INNER - 24,
+      });
+    doc
+      .fontSize(8.5)
+      .font("Helvetica")
+      .fillColor(INK)
+      .text(
+        "Band and comparable data are based on statistical area analysis, NOT live VOA records. " +
+          "Verify your official band at gov.uk/council-tax-bands before submitting any appeal.",
+        MARGIN + 12,
+        disclaimerY + 22,
+        { width: INNER - 24, lineGap: 1 },
+      );
+
     // ── Page footer ──────────────────────────────────────────────────────────
     const footerY = doc.page.height - MARGIN;
     doc
       .fontSize(8.5)
       .font("Helvetica")
       .fillColor(MUTED)
-      .text("BandCheck AI · bandcheckai.co.uk", MARGIN, footerY, { continued: true })
-      .text("  Submit at gov.uk/challenge-council-tax-band", { align: "right", width: INNER });
+      .text("BandCheck AI · bandcheckai.co.uk — ESTIMATED DATA, verify before appealing", MARGIN, footerY, { continued: true })
+      .text("  gov.uk/challenge-council-tax-band", { align: "right", width: INNER });
 
     doc.end();
   });
@@ -436,7 +467,12 @@ function buildDraftLetter(input: EvidencePackInput): string {
       ? input.likelyBand
       : "[lower band]";
 
-  return `To the Valuation Officer,
+  return `NOTE: This draft letter was generated from estimated area data. Before sending, verify \
+your official council tax band at gov.uk/council-tax-bands and update the band references below accordingly.
+
+---
+
+To the Valuation Officer,
 Valuation Office Agency
 
 ${date}

@@ -4,6 +4,8 @@ export type CheckResponse = {
   postcode: string;
   userBand: string;
   nearbyProperties: NearbyProperty[];
+  /** Band is statistically modelled — not live VOA data. Always verify. */
+  isEstimated?: boolean;
 };
 
 export type LeadPayload = {

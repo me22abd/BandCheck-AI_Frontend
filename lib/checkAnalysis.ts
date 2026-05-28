@@ -241,6 +241,11 @@ export type CheckAnalysisData = {
   postcode: string;
   userBand: string;
   nearbyProperties: NearbyProperty[];
+  /**
+   * Always true — band and comparables are statistically modelled from
+   * area data, NOT live VOA records. Users must verify at gov.uk/council-tax-bands.
+   */
+  isEstimated: true;
 };
 
 /**
@@ -317,6 +322,7 @@ export async function getCheckAnalysisForPostcode(
       postcode: normalizedPostcode,
       userBand,
       nearbyProperties,
+      isEstimated: true,
     },
   };
 }

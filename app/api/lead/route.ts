@@ -172,13 +172,37 @@ function buildEmailHtml(body: LeadBody): string {
             </td>
           </tr>
 
+          <!-- Disclaimer -->
+          <tr>
+            <td style="padding-top:20px;">
+              <table width="100%" cellpadding="0" cellspacing="0"
+                     style="background:#FFF8F5;border-radius:12px;border:1px solid rgba(200,67,28,0.25);padding:14px 16px;">
+                <tr>
+                  <td>
+                    <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#C8431C;text-transform:uppercase;letter-spacing:0.7px;">
+                      ⚠ Important — estimated data only
+                    </p>
+                    <p style="margin:0;font-size:12px;color:#4A4435;line-height:1.6;">
+                      The band and comparable property data in this pack are based on statistical area analysis, <strong>not live VOA records</strong>.
+                      You must verify your official council tax band before submitting any appeal.
+                    </p>
+                    <p style="margin:6px 0 0;">
+                      <a href="https://www.gov.uk/council-tax-bands" style="font-size:12px;color:#C8431C;font-weight:600;">
+                        Check your official band at gov.uk/council-tax-bands →
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- Footer -->
           <tr>
-            <td style="padding-top:28px;text-align:center;">
+            <td style="padding-top:20px;text-align:center;">
               <p style="margin:0;font-size:11px;color:#8A8472;line-height:1.6;">
                 BandCheck AI · <a href="https://www.bandcheckai.co.uk" style="color:#8A8472;">bandcheckai.co.uk</a><br />
-                You're receiving this because you requested an evidence pack.<br />
-                Savings are estimates. Results should be used as a guide only.
+                You're receiving this because you requested an evidence pack.
               </p>
             </td>
           </tr>
