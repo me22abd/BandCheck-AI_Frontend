@@ -10,6 +10,16 @@ type LeadBody = {
   userBand: string;
   draftAppeal: boolean;
   comparables?: Comparable[];
+  likelyBand?: string;
+  score?: number;
+  strength?: string;
+  lowerCount?: number;
+  totalProperties?: number;
+  currentAnnual?: number;
+  reducedAnnual?: number;
+  annualSaving?: number;
+  backdatedRefund?: number;
+  totalOwed?: number;
 };
 
 function isString(v: unknown): v is string {
@@ -206,6 +216,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: "userBand is required" }, { status: 400 });
   }
 
+  function optNum(v: unknown): number | undefined {
+    const n = Number(v);
+    return typeof v === "number" || (typeof v === "string" && v.trim() !== "")
+      ? Number.isFinite(n) ? n : undefined
+      : undefined;
+  }
+
   const lead: LeadBody = {
     email: String(raw.email).trim().toLowerCase(),
     postcode: String(raw.postcode).trim().toUpperCase().replace(/\s+/g, ""),
@@ -216,6 +233,16 @@ export async function POST(request: NextRequest) {
           (c) => typeof c === "object" && c !== null && isString(c.address) && isString(c.band),
         )
       : [],
+    likelyBand: isString(raw.likelyBand) ? String(raw.likelyBand).trim().toUpperCase().charAt(0) : undefined,
+    score: optNum(raw.score),
+    strength: isString(raw.strength) ? String(raw.strength).trim() : undefined,
+    lowerCount: optNum(raw.lowerCount),
+    totalProperties: optNum(raw.totalProperties),
+    currentAnnual: optNum(raw.currentAnnual),
+    reducedAnnual: optNum(raw.reducedAnnual),
+    annualSaving: optNum(raw.annualSaving),
+    backdatedRefund: optNum(raw.backdatedRefund),
+    totalOwed: optNum(raw.totalOwed),
   };
 
   // --- Log lead (database integration point) ---
@@ -238,6 +265,16 @@ export async function POST(request: NextRequest) {
     pdfBuffer = await buildEvidencePdfBuffer({
       postcode: lead.postcode,
       userBand: lead.userBand,
+      likelyBand: lead.likelyBand,
+      score: lead.score,
+      strength: lead.strength,
+      lowerCount: lead.lowerCount,
+      totalProperties: lead.totalProperties,
+      currentAnnual: lead.currentAnnual,
+      reducedAnnual: lead.reducedAnnual,
+      annualSaving: lead.annualSaving,
+      backdatedRefund: lead.backdatedRefund,
+      totalOwed: lead.totalOwed,
       comparables: lead.comparables ?? [],
       email: lead.email,
     });

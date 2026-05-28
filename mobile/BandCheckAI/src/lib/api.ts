@@ -12,6 +12,17 @@ export type LeadPayload = {
   userBand: string;
   draftAppeal: boolean;
   comparables?: Array<{ address: string; band: string }>;
+  // Scoring & savings — computed client-side, used for the PDF
+  likelyBand?: string;
+  score?: number;
+  strength?: string;
+  lowerCount?: number;
+  totalProperties?: number;
+  currentAnnual?: number;
+  reducedAnnual?: number;
+  annualSaving?: number;
+  backdatedRefund?: number;
+  totalOwed?: number;
 };
 
 export type SubmitLeadResult =
@@ -87,7 +98,16 @@ export async function checkPostcode(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ postcode }),
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (typeof body?.error === "string" && body.error.trim()) {
+        message = body.error.trim();
+      }
+    } catch { /* use default */ }
+    throw new Error(message);
+  }
   const data = (await res.json()) as CheckResponse;
   return {
     ...data,

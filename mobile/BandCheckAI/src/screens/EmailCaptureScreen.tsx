@@ -17,6 +17,7 @@ import { SmallChip } from "../components/editorial/SmallChip";
 import { TopBar } from "../components/editorial/TopBar";
 import { submitLead, type LeadPayload, type SubmitLeadResult } from "../lib/api";
 import { formatPostcode } from "../lib/postcode";
+import { getAppealSummary } from "../lib/appealEstimates";
 import { editorial } from "../theme/editorial";
 import type { EditorialFonts } from "../theme/editorial";
 
@@ -66,12 +67,26 @@ export function EmailCaptureScreen({
     if (!canSubmit) return;
     setLoading(true);
     setSubmitResult(null);
+
+    // Compute scoring so the server can build a fully-populated PDF
+    const summary = getAppealSummary(userBand, nearbyProperties);
+
     const payload: LeadPayload = {
       email: email.trim(),
       postcode,
       userBand,
       draftAppeal,
-      comparables: nearbyProperties.slice(0, 6),
+      comparables: nearbyProperties.slice(0, 8),
+      likelyBand: summary.likelyBand,
+      score: summary.score,
+      strength: summary.strength,
+      lowerCount: summary.lowerCount,
+      totalProperties: summary.totalProperties,
+      currentAnnual: summary.currentAnnual,
+      reducedAnnual: summary.reducedAnnual,
+      annualSaving: summary.annualSaving,
+      backdatedRefund: summary.backdatedRefund,
+      totalOwed: summary.totalOwed,
     };
     const result = await submitLead(apiBaseUrl, payload);
     setLoading(false);
@@ -88,7 +103,7 @@ export function EmailCaptureScreen({
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.flex} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           <TopBar
             fonts={fonts}
             left={
