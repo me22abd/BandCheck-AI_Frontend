@@ -138,8 +138,19 @@ function buildEmailHtml(body: LeadBody): string {
                     <table cellpadding="0" cellspacing="0" style="margin-top:16px;">
                       <tr>
                         <td style="background:#C8431C;border-radius:10px;padding:12px 24px;">
-                          <a href="https://www.bandcheckai.co.uk" style="font-size:14px;font-weight:600;color:#FBF7EC;text-decoration:none;">
-                            Build my appeal →
+                          <!--
+                            Primary: opens the BandCheck AI app directly on the Appeal Builder.
+                            Fallback: if the app is not installed, opens the web appeal page.
+                          -->
+                          <a href="bandcheckai://appeal" style="font-size:14px;font-weight:600;color:#FBF7EC;text-decoration:none;">
+                            Build my appeal in the app →
+                          </a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top:10px;text-align:center;">
+                          <a href="https://www.bandcheckai.co.uk/appeal" style="font-size:12px;color:#8A8472;text-decoration:underline;">
+                            Or continue on the website →
                           </a>
                         </td>
                       </tr>
