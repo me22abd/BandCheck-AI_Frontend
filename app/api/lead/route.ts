@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { buildEvidencePdfBuffer } from "@/app/lib/buildEvidencePdf";
 
+// Must run on Node.js — pdfkit uses fs to load font files at runtime.
+// Edge runtime does not support fs and would silently drop the PDF.
+export const runtime = "nodejs";
+
 type Comparable = { address: string; band: string };
 
 type LeadBody = {
@@ -283,7 +287,7 @@ export async function POST(request: NextRequest) {
   const fromAddress =
     process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
 
-  // Generate PDF attachment (best-effort — skip if it fails)
+  // Generate PDF attachment (best-effort — email is still sent if PDF fails)
   let pdfBuffer: Buffer | undefined;
   try {
     pdfBuffer = await buildEvidencePdfBuffer({
@@ -302,8 +306,10 @@ export async function POST(request: NextRequest) {
       comparables: lead.comparables ?? [],
       email: lead.email,
     });
+    console.log(`[lead] PDF generated: ${pdfBuffer.length} bytes`);
   } catch (e) {
-    console.warn("[lead] PDF generation failed — sending email without attachment:", e);
+    // Log the full error so it appears in Vercel function logs
+    console.error("[lead] PDF generation failed:", e instanceof Error ? e.stack : e);
   }
 
   const filename = `BandCheck-AI-Evidence-Pack-${formatPostcode(lead.postcode).replace(/\s+/g, "-")}.pdf`;
@@ -319,7 +325,7 @@ export async function POST(request: NextRequest) {
             attachments: [
               {
                 filename,
-                content: pdfBuffer.toString("base64"),
+                content: pdfBuffer,
               },
             ],
           }
