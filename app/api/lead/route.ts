@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { buildEvidencePdfBuffer } from "@/app/lib/buildEvidencePdf";
 
 type Comparable = { address: string; band: string };
 
@@ -231,16 +232,40 @@ export async function POST(request: NextRequest) {
   const fromAddress =
     process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
 
+  // Generate PDF attachment (best-effort — skip if it fails)
+  let pdfBuffer: Buffer | undefined;
+  try {
+    pdfBuffer = await buildEvidencePdfBuffer({
+      postcode: lead.postcode,
+      userBand: lead.userBand,
+      comparables: lead.comparables ?? [],
+      email: lead.email,
+    });
+  } catch (e) {
+    console.warn("[lead] PDF generation failed — sending email without attachment:", e);
+  }
+
+  const filename = `BandCheck-AI-Evidence-Pack-${formatPostcode(lead.postcode).replace(/\s+/g, "-")}.pdf`;
+
   try {
     const { error } = await resend.emails.send({
       from: fromAddress,
       to: [lead.email],
       subject: `Your BandCheck AI evidence pack — ${formatPostcode(lead.postcode)}`,
       html: buildEmailHtml(lead),
+      ...(pdfBuffer
+        ? {
+            attachments: [
+              {
+                filename,
+                content: pdfBuffer.toString("base64"),
+              },
+            ],
+          }
+        : {}),
     });
 
     if (error) {
-      // Lead is already captured above — degrade gracefully
       console.error("[lead] Resend error:", error);
       return NextResponse.json({ success: true, emailSent: false });
     }
