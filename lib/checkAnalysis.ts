@@ -212,6 +212,8 @@ export type CheckAnalysisData = {
    * true  = band is statistically modelled — must be verified at gov.uk/council-tax-bands.
    */
   isEstimated: boolean;
+  /** Where the band was obtained from. */
+  bandSource: "gov" | "provider" | "model";
 };
 
 /**
@@ -266,6 +268,7 @@ export async function getCheckAnalysisForPostcode(
         userBand: gov.band,
         nearbyProperties,
         isEstimated: false,
+        bandSource: "gov",
       },
     };
   }
@@ -305,6 +308,7 @@ export async function getCheckAnalysisForPostcode(
         userBand,
         nearbyProperties,
         isEstimated: !houseNumber?.trim(), // exact match = confirmed; postcode-only = inferred
+        bandSource: "provider",
       },
     };
   }
@@ -355,6 +359,7 @@ export async function getCheckAnalysisForPostcode(
       userBand,
       nearbyProperties,
       isEstimated: true,
+      bandSource: "model",
     },
   };
 }
