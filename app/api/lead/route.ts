@@ -217,8 +217,9 @@ export async function POST(request: NextRequest) {
   }
 
   const resend = new Resend(apiKey);
+  // Fallback to Resend's shared test domain until bandcheckai.co.uk is verified
   const fromAddress =
-    process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
+    process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <onboarding@resend.dev>";
 
   try {
     const { error } = await resend.emails.send({
