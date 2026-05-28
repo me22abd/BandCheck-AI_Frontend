@@ -209,16 +209,16 @@ export async function POST(request: NextRequest) {
   // --- Log lead (database integration point) ---
   console.log("[lead]", JSON.stringify({ ...lead, ts: new Date().toISOString() }));
 
-  // --- Send confirmation email ---
+  // --- Send confirmation email (best-effort — never blocks the user) ---
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
-    // Email is not configured — still return success so the user isn't blocked
     console.warn("[lead] RESEND_API_KEY not set — email skipped");
     return NextResponse.json({ success: true, emailSent: false });
   }
 
   const resend = new Resend(apiKey);
-  const fromAddress = process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
+  const fromAddress =
+    process.env.RESEND_FROM_EMAIL?.trim() || "BandCheck AI <hello@bandcheckai.co.uk>";
 
   try {
     const { error } = await resend.emails.send({
@@ -229,18 +229,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      // Lead is already captured above — degrade gracefully
       console.error("[lead] Resend error:", error);
-      return NextResponse.json(
-        { success: false, error: "Failed to send confirmation email. Please try again." },
-        { status: 502 },
-      );
+      return NextResponse.json({ success: true, emailSent: false });
     }
   } catch (e) {
     console.error("[lead] Resend exception:", e);
-    return NextResponse.json(
-      { success: false, error: "Email service unavailable. Please try again." },
-      { status: 503 },
-    );
+    return NextResponse.json({ success: true, emailSent: false });
   }
 
   return NextResponse.json({ success: true, emailSent: true });

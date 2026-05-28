@@ -1,0 +1,96 @@
+import type { NearbyProperty } from "./scoring";
+
+export type CheckResponse = {
+  postcode: string;
+  userBand: string;
+  nearbyProperties: NearbyProperty[];
+};
+
+export type LeadPayload = {
+  email: string;
+  postcode: string;
+  userBand: string;
+  draftAppeal: boolean;
+  comparables?: Array<{ address: string; band: string }>;
+};
+
+export type SubmitLeadResult =
+  | { ok: true; emailSent: boolean }
+  | { ok: false; error: string; status?: number };
+
+export async function submitLead(
+  apiBaseUrl: string,
+  payload: LeadPayload,
+): Promise<SubmitLeadResult> {
+  const base = apiBaseUrl.trim();
+  if (!base) {
+    return {
+      ok: false,
+      error: "API is not configured. Add EXPO_PUBLIC_API_BASE_URL to your .env file.",
+    };
+  }
+
+  try {
+    const res = await fetch(`${base}/api/lead`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      let emailSent = true;
+      try {
+        const json = (await res.json()) as { success?: boolean; emailSent?: boolean };
+        emailSent = json.emailSent !== false;
+      } catch {
+        // default to true (optimistic)
+      }
+      return { ok: true, emailSent };
+    }
+
+    let message = `Could not send (${res.status})`;
+    try {
+      const body = (await res.json()) as { error?: string };
+      if (typeof body?.error === "string" && body.error.trim()) {
+        message = body.error.trim();
+      }
+    } catch {
+      // use default message
+    }
+
+    return { ok: false, error: message, status: res.status };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Network error";
+    return { ok: false, error: message };
+  }
+}
+
+export function getApiBaseUrl(): string {
+  const env = process.env.EXPO_PUBLIC_API_BASE_URL?.trim() ?? "";
+  return normalizeApiBaseUrl(env);
+}
+
+export function normalizeApiBaseUrl(raw: string): string {
+  const s = (raw ?? "").trim().replace(/\/+$/, "");
+  if (!s) return "";
+  if (s === "https://bandcheckai.co.uk") return "https://www.bandcheckai.co.uk";
+  if (s === "http://bandcheckai.co.uk") return "http://www.bandcheckai.co.uk";
+  return s;
+}
+
+export async function checkPostcode(
+  apiBaseUrl: string,
+  postcode: string,
+): Promise<CheckResponse> {
+  const res = await fetch(`${apiBaseUrl}/api/check`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ postcode }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = (await res.json()) as CheckResponse;
+  return {
+    ...data,
+    nearbyProperties: data.nearbyProperties ?? [],
+  };
+}
