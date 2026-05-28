@@ -1,4 +1,4 @@
-import { scrapeGovCouncilTaxBand } from "./govCouncilTaxScraper";
+import { scrapeGovAllPropertiesAtPostcode } from "./govCouncilTaxScraper";
 import { lookupVoaBands } from "./voaLookup";
 import type { NearbyProperty } from "./scoring";
 
@@ -251,22 +251,43 @@ export async function getCheckAnalysisForPostcode(
   const lookup = lookupOutcome.result;
   const district = lookup.admin_district?.trim() || "Local area";
 
-  // Step 2: primary free source — scrape GOV checker
-  const gov = await scrapeGovCouncilTaxBand(normalizedPostcode, houseNumber);
-  if (gov.ok) {
-    // We only know the band for the selected property; comparables still come from
-    // provider APIs when available, otherwise from the statistical fallback.
-    const voaForComps = await lookupVoaBands(normalizedPostcode);
-    const nearbyProperties: NearbyProperty[] = voaForComps.ok
-      ? voaForComps.properties.map((p) => ({ address: p.address, band: p.band }))
-      : [];
+  // Step 2: primary free source — scrape GOV checker for ALL properties at postcode
+  // This single call gives us the user's band AND all comparables at once (cached 24 h).
+  const gov = await scrapeGovAllPropertiesAtPostcode(normalizedPostcode);
+  if (gov.ok && gov.properties.length > 0) {
+    const props = gov.properties;
+
+    // Identify the user's specific property by house number if supplied
+    const hn = houseNumber?.trim().toLowerCase();
+    const userProp = hn
+      ? (props.find((p) => p.address.toLowerCase().includes(hn)) ?? props[0])
+      : props[0];
+
+    const userBand = userProp.band;
+
+    // Comparables = every other property at the postcode (exclude user's exact address)
+    const nearbyProperties: NearbyProperty[] = props
+      .filter((p) => p.address !== userProp.address)
+      .map((p) => ({ address: p.address, band: p.band }));
+
+    // If only one property exists at this postcode, attempt provider comparables
+    // so the UI never shows an empty list.
+    let finalComps = nearbyProperties;
+    if (finalComps.length === 0) {
+      const voaForComps = await lookupVoaBands(normalizedPostcode);
+      if (voaForComps.ok) {
+        finalComps = voaForComps.properties
+          .filter((p) => p.address !== userProp.address)
+          .map((p) => ({ address: p.address, band: p.band }));
+      }
+    }
 
     return {
       ok: true,
       data: {
         postcode: normalizedPostcode,
-        userBand: gov.band,
-        nearbyProperties,
+        userBand,
+        nearbyProperties: finalComps,
         isEstimated: false,
         bandSource: "gov",
       },
@@ -315,10 +336,10 @@ export async function getCheckAnalysisForPostcode(
 
   // Step 4: statistical fallback
   // Log why real data wasn't used so the operator can diagnose it
-  if (gov.ok === false) {
+  if (!gov.ok) {
     console.warn(`[checkAnalysis] GOV scrape failed for ${normalizedPostcode}: ${gov.reason}`);
   }
-  if (voaResult.ok === false) {
+  if (!voaResult.ok) {
     console.warn(`[checkAnalysis] Provider lookup failed for ${normalizedPostcode}: ${voaResult.reason}`);
   }
 
