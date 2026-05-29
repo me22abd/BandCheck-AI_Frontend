@@ -14,22 +14,22 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "Bandcheck ai",
-    template: "%s | Bandcheck ai",
+    default: "BandCheck AI",
+    template: "%s | BandCheck AI",
   },
   description:
     "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
   metadataBase: new URL("https://www.bandcheckai.co.uk"),
   openGraph: {
-    title: "Bandcheck ai",
+    title: "BandCheck AI",
     description:
       "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
     type: "website",
-    siteName: "Bandcheck ai",
+    siteName: "BandCheck AI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Bandcheck ai",
+    title: "BandCheck AI",
     description:
       "Check if you may be overpaying council tax and build a stronger appeal case in minutes.",
   },

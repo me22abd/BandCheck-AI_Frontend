@@ -17,6 +17,12 @@ export default async function AppealPage({ searchParams }: PageProps) {
   );
 
   return (
-    <AppealEmailCaptureClient key={routeKey} appealStartHref={appealStartHref} />
+    <AppealEmailCaptureClient
+      key={routeKey}
+      appealStartHref={appealStartHref}
+      postcode={fields.postcode}
+      band={fields.band}
+      comparablesRaw={fields.comparables}
+    />
   );
 }

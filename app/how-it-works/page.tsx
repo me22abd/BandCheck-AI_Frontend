@@ -72,7 +72,7 @@ export default function HowItWorksPage() {
         <div className="mb-16 max-w-2xl">
           <SmallChip tone="accent">How it works</SmallChip>
           <h1 className="mt-4 font-serif text-3xl tracking-tight sm:text-4xl">
-            How Bandcheck ai works
+            How BandCheck AI works
           </h1>
           <p className="mt-4 text-base leading-relaxed text-ink-2">
             A simple, guided process to check your council tax band and build a

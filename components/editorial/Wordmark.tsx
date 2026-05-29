@@ -7,9 +7,9 @@ type Props = {
 
 export function Wordmark({ href = "/", className = "" }: Props) {
   const inner = (
-    <span className={`inline-flex items-baseline gap-1 tracking-tight ${className}`}>
-      <span className="font-sans text-base font-semibold text-ink">Bandcheck</span>
-      <span className="font-serif text-base italic text-accent">ai</span>
+    <span className={`inline-flex items-baseline tracking-tight ${className}`}>
+      <span className="font-sans text-base font-semibold text-ink">BandCheck</span>
+      <span className="font-sans text-base font-semibold text-accent"> · AI</span>
     </span>
   );
 

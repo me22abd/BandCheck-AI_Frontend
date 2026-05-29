@@ -31,12 +31,29 @@ type Props = {
   onContinue: (email: string) => void;
 };
 
-const PACK_ITEMS = [
-  { t: "Comparable evidence table", d: "6 nearby homes · band, sale price, source" },
-  { t: "Land Registry citations", d: "Direct links to public records" },
-  { t: "Draft appeal letter", d: "Pre-filled · ready to submit to the VOA" },
-  { t: "Backdating calculation", d: "Refund estimate since 2019" },
-];
+function buildPackItems(
+  postcode: string,
+  userBand: string,
+  nearbyProperties: Array<{ address: string; band: string }>,
+) {
+  const summary = getAppealSummary(userBand, nearbyProperties);
+  const formatted = formatPostcode(postcode);
+  const savingStr = summary.annualSaving > 0
+    ? `Est. £${summary.annualSaving.toLocaleString()}/yr saving`
+    : "Refund estimate since 2019";
+  return [
+    {
+      t: "Comparable evidence table",
+      d: `${nearbyProperties.length} nearby homes · band, sale price, source`,
+    },
+    { t: "Land Registry citations", d: "Direct links to public records" },
+    {
+      t: "Draft appeal letter",
+      d: `Pre-filled for ${formatted} · ready to submit to the VOA`,
+    },
+    { t: "Backdating calculation", d: savingStr },
+  ];
+}
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -274,7 +291,7 @@ export function EmailCaptureScreen({
             <Text style={[styles.packTitle, { fontFamily: fonts.serif }]}>
               What's in your pack
             </Text>
-            {PACK_ITEMS.map((item, i) => (
+            {buildPackItems(postcode, userBand, nearbyProperties).map((item, i) => (
               <View key={item.t} style={[styles.packRow, i > 0 && styles.packRowBorder]}>
                 <View style={styles.packCheck}>
                   <IconCheck size={12} color={editorial.colors.forest} />

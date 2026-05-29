@@ -8,7 +8,10 @@ import {
   Text,
   View,
 } from "react-native";
+import { IconBack } from "../components/editorial/Icons";
+import { IconButton } from "../components/editorial/IconButton";
 import { PaperBackground } from "../components/editorial/PaperBackground";
+import { TopBar } from "../components/editorial/TopBar";
 import { editorial } from "../theme/editorial";
 import type { EditorialFonts } from "../theme/editorial";
 import { formatGbp } from "../lib/appealEstimates";
@@ -30,6 +33,7 @@ type Props = {
   initialRecord: AppealRecord;
   onRecordChange: (record: AppealRecord) => void;
   onDone: () => void;
+  onBack?: () => void;
 };
 
 const STEP_ICONS: Record<AppealStatus, string> = {
@@ -49,7 +53,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export function AppealTrackerScreen({ fonts, initialRecord, onRecordChange, onDone }: Props) {
+export function AppealTrackerScreen({ fonts, initialRecord, onRecordChange, onDone, onBack }: Props) {
   const [record, setRecord] = useState<AppealRecord>(initialRecord);
   const [updating, setUpdating] = useState(false);
 
@@ -140,18 +144,27 @@ export function AppealTrackerScreen({ fonts, initialRecord, onRecordChange, onDo
 
   return (
     <PaperBackground>
+      <TopBar
+        fonts={fonts}
+        left={
+          onBack ? (
+            <IconButton onPress={onBack}>
+              <IconBack color={editorial.colors.ink} />
+            </IconButton>
+          ) : undefined
+        }
+        title="My appeal"
+        right={
+          <Pressable onPress={handleReset} hitSlop={12}>
+            <Text style={[styles.clearText, { fontFamily: fonts.sans }]}>Clear</Text>
+          </Pressable>
+        }
+      />
       <ScrollView
         style={styles.flex}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top bar */}
-        <View style={styles.topBar}>
-          <Text style={[styles.topTitle, { fontFamily: fonts.sansSemiBold }]}>My appeal</Text>
-          <Pressable onPress={handleReset} hitSlop={12}>
-            <Text style={[styles.clearText, { fontFamily: fonts.sans }]}>Clear</Text>
-          </Pressable>
-        </View>
 
         {/* Win celebration card */}
         {isWon ? (
@@ -349,6 +362,14 @@ export function AppealTrackerScreen({ fonts, initialRecord, onRecordChange, onDo
             </Text>
           </View>
         ) : null}
+
+        {/* View all cases link */}
+        <Pressable style={styles.allCasesLink} onPress={onDone}>
+          <Text style={[styles.allCasesText, { fontFamily: fonts.sans }]}>
+            ← View all my cases
+          </Text>
+        </Pressable>
+
       </ScrollView>
     </PaperBackground>
   );
@@ -356,20 +377,17 @@ export function AppealTrackerScreen({ fonts, initialRecord, onRecordChange, onDo
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  scroll: { paddingBottom: 60 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 32 },
-  loadingText: { fontSize: 14, color: editorial.colors.ink3 },
-  emptyText: { fontSize: 15, color: editorial.colors.ink2, textAlign: "center" },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  topTitle: { fontSize: 16, color: editorial.colors.ink },
+  scroll: { paddingBottom: 40 },
   clearText: { fontSize: 13, color: editorial.colors.ink3 },
+  allCasesLink: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  allCasesText: {
+    fontSize: 14,
+    color: editorial.colors.ink3,
+    textDecorationLine: "underline",
+  },
 
   // Win card
   winCard: {

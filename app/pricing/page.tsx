@@ -63,7 +63,7 @@ export default function PricingPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-accent">
             Pricing
           </p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+          <h1 className="mt-3 font-serif text-3xl tracking-tight text-ink sm:text-4xl">
             Simple, fair pricing
           </h1>
           <p className="mt-4 text-base leading-relaxed text-ink-2">
@@ -94,7 +94,7 @@ export default function PricingPage() {
 
             <Link
               href="/"
-              className="mt-8 flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-accent-deep"
+              className="mt-8 flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep"
             >
               Start Free Check <ArrowRight className="h-4 w-4" />
             </Link>
@@ -112,10 +112,10 @@ export default function PricingPage() {
               Only charged after you receive your refund.
             </p>
 
-            <div className="mt-6 rounded-lg border border-hairline bg-accent/5 p-4">
-              <p className="text-sm font-semibold text-blue-900">How it works in practice</p>
-              <p className="mt-2 text-sm leading-relaxed text-blue-800/80">
-                If your refund is <span className="font-semibold">£3,000</span>, we take a small percentage of
+            <div className="mt-6 rounded-xl border border-hairline bg-forest/5 p-4">
+              <p className="text-sm font-semibold text-forest">How it works in practice</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-2">
+                If your refund is <span className="font-semibold text-ink">£3,000</span>, we take a small percentage of
                 that — so you keep the vast majority of the savings. We only
                 succeed when you do.
               </p>
@@ -129,7 +129,7 @@ export default function PricingPage() {
                 "Fee confirmed before you submit",
               ].map((line) => (
                 <div key={line} className="flex items-center gap-3 text-sm text-ink-2">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-forest" />
                   {line}
                 </div>
               ))}
@@ -168,7 +168,7 @@ export default function PricingPage() {
                       Band {from} → Band {to}
                     </td>
                     <td className="px-5 py-3 text-ink-2">{perYear}</td>
-                    <td className="px-5 py-3 font-medium text-green-700">{refund}</td>
+                    <td className="px-5 py-3 font-semibold text-forest">{refund}</td>
                     <td className="px-5 py-3 text-ink-3">{fee}</td>
                   </tr>
                 ))}
@@ -183,9 +183,9 @@ export default function PricingPage() {
         {/* Reassurance row */}
         <div className="mt-12 grid gap-4 sm:grid-cols-3">
           {[
-            { icon: <ShieldCheck className="h-5 w-5 text-blue-600" />, title: "No hidden fees", body: "The fee structure is explained clearly before you submit anything. No surprises." },
-            { icon: <ShieldCheck className="h-5 w-5 text-blue-600" />, title: "No obligation", body: "You can generate and review your appeal pack without any commitment to proceed." },
-            { icon: <ShieldCheck className="h-5 w-5 text-blue-600" />, title: "Transparent process", body: "We show you every comparable property we used and explain exactly how your case was assessed." },
+            { icon: <ShieldCheck className="h-5 w-5 text-forest" />, title: "No hidden fees", body: "The fee structure is explained clearly before you submit anything. No surprises." },
+            { icon: <ShieldCheck className="h-5 w-5 text-forest" />, title: "No obligation", body: "You can generate and review your appeal pack without any commitment to proceed." },
+            { icon: <ShieldCheck className="h-5 w-5 text-forest" />, title: "Transparent process", body: "We show you every comparable property we used and explain exactly how your case was assessed." },
           ].map(({ icon, title, body }) => (
             <div key={title} className="rounded-lg border border-hairline bg-paper-2/40 p-5">
               <div className="flex items-center gap-3">
@@ -225,7 +225,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-accent-deep"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep"
           >
             Start Free Check <ArrowRight className="h-4 w-4" />
           </Link>

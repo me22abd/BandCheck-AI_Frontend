@@ -5,6 +5,9 @@ export type CaseStatus =
   | "in_progress"
   | "pack_requested"
   | "appeal_submitted"
+  | "under_review"
+  | "successful"
+  | "unsuccessful"
   | "won"
   | "lost";
 
@@ -18,6 +21,10 @@ export type SavedCase = {
   email?: string;
   likelyBand?: string;
   annualSaving?: number;
+  // Outcome fields
+  outcomeRefund?: number;
+  outcomeAnnualReduction?: number;
+  outcomeRecordedAt?: string;
   status: CaseStatus;
   createdAt: string;
   updatedAt: string;
@@ -28,8 +35,11 @@ const CASES_KEY = "cases_v1";
 export const STATUS_LABELS: Record<CaseStatus, string> = {
   in_progress: "In progress",
   pack_requested: "Pack requested",
-  appeal_submitted: "Appeal submitted",
-  won: "Won 🏆",
+  appeal_submitted: "Submitted",
+  under_review: "Under review",
+  successful: "Successful",
+  unsuccessful: "Unsuccessful",
+  won: "Won",
   lost: "Lost",
 };
 
@@ -37,9 +47,20 @@ export const STATUS_COLORS: Record<CaseStatus, string> = {
   in_progress: "#C8431C",
   pack_requested: "#C8431C",
   appeal_submitted: "#0F5C3E",
+  under_review: "#2563EB",
+  successful: "#0F5C3E",
+  unsuccessful: "#8A8472",
   won: "#0F5C3E",
   lost: "#8A8472",
 };
+
+export function isActiveAppeal(status: CaseStatus): boolean {
+  return ["appeal_submitted", "under_review"].includes(status);
+}
+
+export function isFinalOutcome(status: CaseStatus): boolean {
+  return ["successful", "unsuccessful", "won", "lost"].includes(status);
+}
 
 async function loadAll(): Promise<SavedCase[]> {
   return (await storageGet<SavedCase[]>(CASES_KEY)) ?? [];

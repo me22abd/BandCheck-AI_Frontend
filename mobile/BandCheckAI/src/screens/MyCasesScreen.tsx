@@ -16,6 +16,8 @@ import { BandPill } from "../components/editorial/BandPill";
 import { useAppContext } from "../context/AppContext";
 import {
   deleteCase,
+  isActiveAppeal,
+  isFinalOutcome,
   listCases,
   STATUS_COLORS,
   STATUS_LABELS,
@@ -24,10 +26,10 @@ import {
 import { bandKey, formatGbp } from "../lib/appealEstimates";
 import { formatPostcode } from "../lib/postcode";
 import { editorial } from "../theme/editorial";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { StackScreenProps } from "@react-navigation/stack";
 import type { RootStackParamList } from "../navigation/types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "MyCases">;
+type Props = StackScreenProps<RootStackParamList, "MyCases">;
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -82,6 +84,10 @@ export function MyCasesScreen({ navigation }: Props) {
     navigation.navigate("CaseDetail", { savedCase: c });
   }
 
+  function handleUpdateOutcome(c: SavedCase) {
+    navigation.navigate("OutcomeRecord", { savedCase: c });
+  }
+
   return (
     <PaperBackground>
       <TopBar
@@ -117,7 +123,6 @@ export function MyCasesScreen({ navigation }: Props) {
                 key={c.id}
                 style={styles.card}
                 onPress={() => handleOpen(c)}
-                onLongPress={() => handleDelete(c)}
               >
                 <View style={styles.cardTop}>
                   <View style={styles.cardLeft}>
@@ -135,20 +140,29 @@ export function MyCasesScreen({ navigation }: Props) {
                       </Text>
                     </View>
                   </View>
-                  <View
-                    style={[
-                      styles.statusChip,
-                      { backgroundColor: STATUS_COLORS[c.status] + "18" },
-                    ]}
-                  >
-                    <Text
+                  <View style={styles.cardRight}>
+                    <View
                       style={[
-                        styles.statusText,
-                        { fontFamily: fonts.sansSemiBold, color: STATUS_COLORS[c.status] },
+                        styles.statusChip,
+                        { backgroundColor: STATUS_COLORS[c.status] + "18" },
                       ]}
                     >
-                      {STATUS_LABELS[c.status]}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { fontFamily: fonts.sansSemiBold, color: STATUS_COLORS[c.status] },
+                        ]}
+                      >
+                        {STATUS_LABELS[c.status]}
+                      </Text>
+                    </View>
+                    <Pressable
+                      style={styles.deleteBtn}
+                      onPress={() => handleDelete(c)}
+                      hitSlop={8}
+                    >
+                      <Text style={[styles.deleteBtnText, { fontFamily: fonts.sans }]}>×</Text>
+                    </Pressable>
                   </View>
                 </View>
 
@@ -163,9 +177,16 @@ export function MyCasesScreen({ navigation }: Props) {
                   </Text>
                 </View>
 
-                <Text style={[styles.longPressHint, { fontFamily: fonts.sans }]}>
-                  Long-press to delete
-                </Text>
+                {(isActiveAppeal(c.status) || c.status === "appeal_submitted") && !isFinalOutcome(c.status) ? (
+                  <Pressable
+                    style={styles.outcomeBtn}
+                    onPress={() => handleUpdateOutcome(c)}
+                  >
+                    <Text style={[styles.outcomeBtnText, { fontFamily: fonts.sansSemiBold }]}>
+                      Record outcome →
+                    </Text>
+                  </Pressable>
+                ) : null}
               </Pressable>
             ))}
           </View>
@@ -217,6 +238,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardLeft: { flexDirection: "row", alignItems: "center", gap: 10, flex: 1 },
+  cardRight: { flexDirection: "row", alignItems: "center", gap: 8 },
   cardMeta: { flex: 1 },
   cardPostcode: { fontSize: 15, color: editorial.colors.ink },
   cardDistrict: { fontSize: 12, color: editorial.colors.ink3, marginTop: 1 },
@@ -226,6 +248,15 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   statusText: { fontSize: 11 },
+  deleteBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: editorial.colors.hairline,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteBtnText: { fontSize: 18, color: editorial.colors.ink3, lineHeight: 22 },
   cardBottom: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -236,5 +267,12 @@ const styles = StyleSheet.create({
   },
   cardSaving: { fontSize: 13, color: editorial.colors.forest },
   cardDate: { fontSize: 11, color: editorial.colors.ink3 },
-  longPressHint: { fontSize: 10, color: editorial.colors.ink3, marginTop: 6 },
+  outcomeBtn: {
+    marginTop: 10,
+    paddingVertical: 9,
+    borderRadius: 8,
+    backgroundColor: editorial.colors.chipForestBg,
+    alignItems: "center",
+  },
+  outcomeBtnText: { fontSize: 13, color: editorial.colors.forest },
 });

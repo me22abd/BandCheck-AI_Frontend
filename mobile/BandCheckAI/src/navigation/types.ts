@@ -1,5 +1,5 @@
 import type { CheckResponse } from "../lib/api";
-import type { SavedCase } from "../lib/casesStore";
+import type { CaseStatus, SavedCase } from "../lib/casesStore";
 import type { AppealRecord } from "../lib/appealTracker";
 
 export type RootStackParamList = {
@@ -7,6 +7,7 @@ export type RootStackParamList = {
   Home: undefined;
   Compare: { checkData: CheckResponse };
   Summary: { checkData: CheckResponse };
+  PackPreview: { checkData: CheckResponse };
   Email: { checkData: CheckResponse };
   Builder: { checkData: CheckResponse; email: string };
   Submit: { checkData: CheckResponse; email: string; likelyBand?: string };
@@ -16,4 +17,8 @@ export type RootStackParamList = {
   CaseDetail: { savedCase: SavedCase };
   Appeal: undefined;
   Settings: undefined;
+  // Outcome flow
+  OutcomeRecord: { savedCase: SavedCase };
+  OutcomeSuccess: { postcode: string; refundAmount?: number; annualReduction?: number };
+  Testimonial: { postcode: string; refundAmount?: number };
 };

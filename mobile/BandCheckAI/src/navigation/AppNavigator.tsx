@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator, TransitionPresets } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
+import type { StackScreenProps } from "@react-navigation/stack";
 
 import { useAppContext } from "../context/AppContext";
 import { storageGet, storageSet } from "../lib/storage";
-import { upsertCase, caseIdFromPostcode, getLatestInProgressCase } from "../lib/casesStore";
+import { upsertCase, deleteCase, updateCaseStatus, caseIdFromPostcode, getLatestInProgressCase } from "../lib/casesStore";
+import { cancelAllNotificationsForCase, schedulePackReminderNotifications, schedulePostSubmissionNotifications } from "../lib/notifications";
 import { saveAppealRecord, loadAppealRecord, type AppealRecord } from "../lib/appealTracker";
 
 import { OnboardingScreen } from "../screens/OnboardingScreen";
@@ -18,6 +20,10 @@ import { EmailCaptureScreen } from "../screens/EmailCaptureScreen";
 import { AppealBuilderScreen } from "../screens/AppealBuilderScreen";
 import { SubmitWalkthroughScreen } from "../screens/SubmitWalkthroughScreen";
 import { AppealTrackerScreen } from "../screens/AppealTrackerScreen";
+import { EvidencePackPreviewScreen } from "../screens/EvidencePackPreviewScreen";
+import { OutcomeRecordScreen } from "../screens/OutcomeRecordScreen";
+import { OutcomeSuccessScreen } from "../screens/OutcomeSuccessScreen";
+import { TestimonialScreen } from "../screens/TestimonialScreen";
 import { MyCasesScreen } from "../screens/MyCasesScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 
@@ -26,7 +32,7 @@ import type { RootStackParamList } from "./types";
 import type { CheckResponse } from "../lib/api";
 import type { SavedCase } from "../lib/casesStore";
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 // ─── Tab icon components ───────────────────────────────────────────────────────
@@ -52,7 +58,7 @@ function TabLabel({ label, focused, fonts }: { label: string; focused: boolean; 
 
 // ─── Screen wrappers (bridge navigation ↔ existing component props) ────────────
 
-function HomeScreenWrapper({ navigation }: NativeStackScreenProps<RootStackParamList, "Home">) {
+function HomeScreenWrapper({ navigation }: StackScreenProps<RootStackParamList, "Home">) {
   const { fonts, apiBaseUrl } = useAppContext();
   const [hasActiveAppeal, setHasActiveAppeal] = useState(false);
   const [appealRecord, setAppealRecord] = useState<AppealRecord | null>(null);
@@ -88,6 +94,10 @@ function HomeScreenWrapper({ navigation }: NativeStackScreenProps<RootStackParam
           annualSaving: sc.annualSaving,
         },
       })}
+      onDismissCase={(sc) => {
+        deleteCase(sc.id).catch(() => {});
+        setSavedCase(null);
+      }}
       onResult={(data) => {
         setLastPostcode(data.postcode);
         // Save as in-progress case
@@ -110,7 +120,7 @@ function HomeScreenWrapper({ navigation }: NativeStackScreenProps<RootStackParam
   );
 }
 
-function CompareScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Compare">) {
+function CompareScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Compare">) {
   const { fonts, apiBaseUrl } = useAppContext();
   return (
     <CompareScreen
@@ -123,10 +133,22 @@ function CompareScreenWrapper({ navigation, route }: NativeStackScreenProps<Root
   );
 }
 
-function SummaryScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Summary">) {
+function SummaryScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Summary">) {
   const { fonts } = useAppContext();
   return (
     <SummaryScreen
+      fonts={fonts}
+      data={route.params.checkData}
+      onBack={() => navigation.goBack()}
+      onContinue={() => navigation.navigate("PackPreview", { checkData: route.params.checkData })}
+    />
+  );
+}
+
+function PackPreviewScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "PackPreview">) {
+  const { fonts } = useAppContext();
+  return (
+    <EvidencePackPreviewScreen
       fonts={fonts}
       data={route.params.checkData}
       onBack={() => navigation.goBack()}
@@ -135,7 +157,7 @@ function SummaryScreenWrapper({ navigation, route }: NativeStackScreenProps<Root
   );
 }
 
-function EmailScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Email">) {
+function EmailScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Email">) {
   const { fonts, apiBaseUrl } = useAppContext();
   return (
     <EmailCaptureScreen
@@ -146,10 +168,10 @@ function EmailScreenWrapper({ navigation, route }: NativeStackScreenProps<RootSt
       nearbyProperties={route.params.checkData.nearbyProperties}
       onBack={() => navigation.goBack()}
       onContinue={(email) => {
-        // Upgrade case status to pack_requested
+        const pc = route.params.checkData.postcode;
         upsertCase({
-          id: caseIdFromPostcode(route.params.checkData.postcode),
-          postcode: route.params.checkData.postcode,
+          id: caseIdFromPostcode(pc),
+          postcode: pc,
           district: route.params.checkData.district ?? "",
           userBand: route.params.checkData.userBand,
           nearbyProperties: route.params.checkData.nearbyProperties,
@@ -159,13 +181,18 @@ function EmailScreenWrapper({ navigation, route }: NativeStackScreenProps<RootSt
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }).catch(() => {});
+        // Schedule reminder notifications
+        schedulePackReminderNotifications({
+          postcode: pc,
+          formattedPostcode: pc.toUpperCase(),
+        }).catch(() => {});
         navigation.navigate("Builder", { checkData: route.params.checkData, email });
       }}
     />
   );
 }
 
-function BuilderScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Builder">) {
+function BuilderScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Builder">) {
   const { fonts } = useAppContext();
   const { checkData, email } = route.params;
   return (
@@ -182,7 +209,7 @@ function BuilderScreenWrapper({ navigation, route }: NativeStackScreenProps<Root
   );
 }
 
-function SubmitScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Submit">) {
+function SubmitScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Submit">) {
   const { fonts } = useAppContext();
   const { checkData, email, likelyBand } = route.params;
   return (
@@ -205,6 +232,11 @@ function SubmitScreenWrapper({ navigation, route }: NativeStackScreenProps<RootS
             updatedAt: new Date().toISOString(),
           };
           await saveAppealRecord(record);
+          // Schedule post-submission check-in notifications
+          schedulePostSubmissionNotifications({
+            postcode: checkData.postcode,
+            formattedPostcode: checkData.postcode.toUpperCase(),
+          }).catch(() => {});
           // Update case status
           upsertCase({
             id: caseIdFromPostcode(checkData.postcode),
@@ -228,7 +260,7 @@ function SubmitScreenWrapper({ navigation, route }: NativeStackScreenProps<RootS
   );
 }
 
-function TrackerScreenWrapper({ navigation, route }: NativeStackScreenProps<RootStackParamList, "Tracker">) {
+function TrackerScreenWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Tracker">) {
   const { fonts } = useAppContext();
   const [record, setRecord] = useState(route.params.appealRecord);
   return (
@@ -236,6 +268,7 @@ function TrackerScreenWrapper({ navigation, route }: NativeStackScreenProps<Root
       fonts={fonts}
       initialRecord={record}
       onRecordChange={setRecord}
+      onBack={() => navigation.goBack()}
       onDone={() => navigation.navigate("Home")}
     />
   );
@@ -246,10 +279,27 @@ function TrackerScreenWrapper({ navigation, route }: NativeStackScreenProps<Root
 function AppealTabScreen({ navigation }: any) {
   const { fonts } = useAppContext();
   const [appealRecord, setAppealRecord] = useState<AppealRecord | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadAppealRecord().then((r) => setAppealRecord(r ?? null));
-  }, []);
+  // Reload every time the tab comes into focus so navigating away and back
+  // always shows the latest record instead of a stale/empty state.
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      loadAppealRecord().then((r) => {
+        setAppealRecord(r ?? null);
+        setLoading(false);
+      });
+    }, []),
+  );
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: editorial.colors.paper }}>
+        <ActivityIndicator color={editorial.colors.accent} />
+      </View>
+    );
+  }
 
   if (appealRecord) {
     return (
@@ -292,25 +342,93 @@ const noAppealStyles = StyleSheet.create({
   sub: { fontSize: 14, lineHeight: 22, color: editorial.colors.ink3, textAlign: "center" },
 });
 
+// ─── Outcome flow wrappers ─────────────────────────────────────────────────────
+
+function OutcomeRecordWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "OutcomeRecord">) {
+  const { fonts } = useAppContext();
+  const { savedCase } = route.params;
+  return (
+    <OutcomeRecordScreen
+      fonts={fonts}
+      savedCase={savedCase}
+      onBack={() => navigation.goBack()}
+      onSave={async (status, refund, annual) => {
+        await updateCaseStatus(savedCase.id, status, {
+          outcomeRefund: refund,
+          outcomeAnnualReduction: annual,
+          outcomeRecordedAt: new Date().toISOString(),
+        });
+        await cancelAllNotificationsForCase(savedCase.postcode);
+        if (status === "successful") {
+          navigation.replace("Testimonial", { postcode: savedCase.postcode, refundAmount: refund });
+        } else {
+          navigation.navigate("MyCases");
+        }
+      }}
+    />
+  );
+}
+
+function TestimonialWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "Testimonial">) {
+  const { fonts, apiBaseUrl } = useAppContext();
+  const { postcode, refundAmount } = route.params;
+  return (
+    <TestimonialScreen
+      fonts={fonts}
+      apiBaseUrl={apiBaseUrl}
+      postcode={postcode}
+      refundAmount={refundAmount}
+      onBack={() => navigation.goBack()}
+      onSubmit={() => navigation.replace("OutcomeSuccess", { postcode, refundAmount })}
+      onSkip={() => navigation.replace("OutcomeSuccess", { postcode, refundAmount })}
+    />
+  );
+}
+
+function OutcomeSuccessWrapper({ navigation, route }: StackScreenProps<RootStackParamList, "OutcomeSuccess">) {
+  const { fonts } = useAppContext();
+  const { postcode, refundAmount, annualReduction } = route.params;
+  return (
+    <OutcomeSuccessScreen
+      fonts={fonts}
+      postcode={postcode}
+      refundAmount={refundAmount}
+      annualReduction={annualReduction}
+      onDone={() => navigation.navigate("MyCases")}
+    />
+  );
+}
+
 // ─── Home stack ────────────────────────────────────────────────────────────────
 
 function HomeStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+        ...TransitionPresets.SlideFromRightIOS,
+        cardStyle: { backgroundColor: "transparent" },
+      }}
+    >
       <Stack.Screen name="Home" component={HomeScreenWrapper} />
       <Stack.Screen name="Compare" component={CompareScreenWrapper} />
       <Stack.Screen name="Summary" component={SummaryScreenWrapper} />
+      <Stack.Screen name="PackPreview" component={PackPreviewScreenWrapper} />
       <Stack.Screen name="Email" component={EmailScreenWrapper} />
       <Stack.Screen name="Builder" component={BuilderScreenWrapper} />
       <Stack.Screen name="Submit" component={SubmitScreenWrapper} />
       <Stack.Screen name="Tracker" component={TrackerScreenWrapper} />
+      <Stack.Screen name="OutcomeRecord" component={OutcomeRecordWrapper} />
+      <Stack.Screen name="Testimonial" component={TestimonialWrapper} />
+      <Stack.Screen name="OutcomeSuccess" component={OutcomeSuccessWrapper} />
     </Stack.Navigator>
   );
 }
 
 // ─── My Cases stack ────────────────────────────────────────────────────────────
 
-function CaseDetailScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "CaseDetail">) {
+function CaseDetailScreen({ navigation, route }: StackScreenProps<RootStackParamList, "CaseDetail">) {
   const { fonts, apiBaseUrl } = useAppContext();
   const { savedCase } = route.params;
 
@@ -338,14 +456,25 @@ function CaseDetailScreen({ navigation, route }: NativeStackScreenProps<RootStac
 
 function MyCasesStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: false,
+        ...TransitionPresets.SlideFromRightIOS,
+        cardStyle: { backgroundColor: "transparent" },
+      }}
+    >
       <Stack.Screen name="MyCases" component={MyCasesScreen} />
       <Stack.Screen name="CaseDetail" component={CaseDetailScreen} />
       <Stack.Screen name="Summary" component={SummaryScreenWrapper} />
+      <Stack.Screen name="PackPreview" component={PackPreviewScreenWrapper} />
       <Stack.Screen name="Email" component={EmailScreenWrapper} />
       <Stack.Screen name="Builder" component={BuilderScreenWrapper} />
       <Stack.Screen name="Submit" component={SubmitScreenWrapper} />
       <Stack.Screen name="Tracker" component={TrackerScreenWrapper} />
+      <Stack.Screen name="OutcomeRecord" component={OutcomeRecordWrapper} />
+      <Stack.Screen name="Testimonial" component={TestimonialWrapper} />
+      <Stack.Screen name="OutcomeSuccess" component={OutcomeSuccessWrapper} />
     </Stack.Navigator>
   );
 }

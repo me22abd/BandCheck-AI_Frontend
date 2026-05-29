@@ -63,7 +63,7 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="mt-3 font-serif text-3xl tracking-tight text-ink sm:text-4xl">
-            Built for UK homeowners
+            Built for UK homeowners.
           </h1>
           <p className="mt-4 text-base leading-relaxed text-ink-2">
             Around 1 in 3 UK properties are estimated to be in the wrong council
@@ -187,13 +187,13 @@ export default function AboutPage() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:-translate-y-[1px] hover:bg-accent-deep"
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-paper shadow-btn-accent transition-all hover:bg-accent-deep"
             >
               Start Free Check <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/how-it-works"
-              className="inline-flex items-center gap-2 rounded-lg border border-hairline bg-paper-card px-6 py-3 text-sm font-semibold text-ink-2 shadow-sm transition-all duration-150 hover:bg-paper-2/50"
+              className="inline-flex items-center gap-2 rounded-xl border border-hairline bg-paper-card px-6 py-3 text-sm font-semibold text-ink-2 transition-all hover:bg-paper-2/50"
             >
               How it works
             </Link>

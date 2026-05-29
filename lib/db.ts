@@ -64,5 +64,29 @@ export async function migrate(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS idx_pc_checks_postcode
       ON postcode_checks (postcode);
+
+    CREATE TABLE IF NOT EXISTS appeal_outcomes (
+      id                  SERIAL PRIMARY KEY,
+      postcode            TEXT        NOT NULL,
+      original_band       TEXT        NOT NULL,
+      outcome             TEXT        NOT NULL,
+      refund_amount       NUMERIC(10,2),
+      annual_reduction    NUMERIC(10,2),
+      recorded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_outcomes_postcode
+      ON appeal_outcomes (postcode);
+
+    CREATE TABLE IF NOT EXISTS testimonials (
+      id            SERIAL PRIMARY KEY,
+      postcode      TEXT        NOT NULL,
+      first_name    TEXT        NOT NULL,
+      area          TEXT,
+      feedback      TEXT        NOT NULL,
+      refund_amount NUMERIC(10,2),
+      approved      BOOLEAN     NOT NULL DEFAULT false,
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `);
 }

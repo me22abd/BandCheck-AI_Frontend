@@ -35,6 +35,7 @@ type Props = {
   lastPostcode?: string;
   savedCase?: SavedCase | null;
   onResume?: (sc: SavedCase) => void;
+  onDismissCase?: (sc: SavedCase) => void;
 };
 
 const HOW_IT_WORKS = [
@@ -61,7 +62,7 @@ const STATS = [
   { v: "89%", l: "success rate" },
 ];
 
-export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal, lastPostcode, savedCase, onResume }: Props) {
+export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onViewAppeal, lastPostcode, savedCase, onResume, onDismissCase }: Props) {
   const [postcode, setPostcode] = useState("");
   const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -130,20 +131,40 @@ export function HomeScreen({ apiBaseUrl, fonts, onResult, hasActiveAppeal, onVie
 
           {/* Continue card — resume an in-progress check */}
           {savedCase && onResume ? (
-            <Pressable style={styles.continueCard} onPress={() => onResume(savedCase)}>
-              <View style={styles.continueLeft}>
-                <View style={[styles.continueDot, { backgroundColor: STATUS_COLORS[savedCase.status] }]} />
-                <View>
-                  <Text style={[styles.continueTitle, { fontFamily: fonts.sansSemiBold }]}>
-                    Continue — {formatPostcode(savedCase.postcode)}
-                  </Text>
-                  <Text style={[styles.continueSub, { fontFamily: fonts.sans }]}>
-                    {STATUS_LABELS[savedCase.status]} · Band {savedCase.userBand}
-                  </Text>
+            <View style={styles.continueCard}>
+              <Pressable style={styles.continueMain} onPress={() => onResume(savedCase)}>
+                <View style={styles.continueLeft}>
+                  <View style={[styles.continueDot, { backgroundColor: STATUS_COLORS[savedCase.status] }]} />
+                  <View>
+                    <Text style={[styles.continueTitle, { fontFamily: fonts.sansSemiBold }]}>
+                      Continue — {formatPostcode(savedCase.postcode)}
+                    </Text>
+                    <Text style={[styles.continueSub, { fontFamily: fonts.sans }]}>
+                      {STATUS_LABELS[savedCase.status]} · Band {savedCase.userBand}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <Text style={[styles.continueArrow, { fontFamily: fonts.sans }]}>→</Text>
-            </Pressable>
+                <Text style={[styles.continueArrow, { fontFamily: fonts.sans }]}>→</Text>
+              </Pressable>
+              {onDismissCase ? (
+                <Pressable
+                  style={styles.continueDismiss}
+                  onPress={() => {
+                    Alert.alert(
+                      "Cancel this check?",
+                      "This will remove the saved progress for " + formatPostcode(savedCase.postcode) + ".",
+                      [
+                        { text: "Keep it", style: "cancel" },
+                        { text: "Cancel check", style: "destructive", onPress: () => onDismissCase(savedCase) },
+                      ],
+                    );
+                  }}
+                  hitSlop={8}
+                >
+                  <Text style={[styles.continueDismissText, { fontFamily: fonts.sans }]}>×</Text>
+                </Pressable>
+              ) : null}
+            </View>
           ) : null}
 
           {/* Hero */}
@@ -313,16 +334,26 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   continueCard: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    flexDirection: "row", alignItems: "center",
     marginHorizontal: 16, marginBottom: 8, marginTop: 4,
     backgroundColor: editorial.colors.ink,
-    borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
+    borderRadius: 14, overflow: "hidden",
+  },
+  continueMain: {
+    flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingVertical: 14,
   },
   continueLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
   continueDot: { width: 8, height: 8, borderRadius: 4 },
   continueTitle: { fontSize: 14, color: editorial.colors.paper },
   continueSub: { fontSize: 11, color: "rgba(244,239,229,0.55)", marginTop: 2 },
   continueArrow: { fontSize: 18, color: "rgba(244,239,229,0.6)" },
+  continueDismiss: {
+    paddingHorizontal: 14, paddingVertical: 14,
+    borderLeftWidth: 1, borderLeftColor: "rgba(244,239,229,0.12)",
+    alignItems: "center", justifyContent: "center",
+  },
+  continueDismissText: { fontSize: 20, color: "rgba(244,239,229,0.45)", lineHeight: 22 },
   shareNeighbourBtn: {
     flexDirection: "row", alignItems: "center", gap: 12,
     marginHorizontal: 16, marginTop: 16, marginBottom: 4,
