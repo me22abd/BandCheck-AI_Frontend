@@ -129,20 +129,24 @@ function BandLadder({
 
 export default async function ResultsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ postcode: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { postcode: postcodeParam } = await params;
+  const sp = await searchParams;
   const decodedPostcode = decodeURIComponent(postcodeParam);
   const compact = decodedPostcode.replace(/\s+/g, "").toUpperCase();
   const formatted = formatPostcode(compact);
+  const houseNumber = typeof sp.house === "string" ? sp.house.trim() : undefined;
 
   let apiData: { userBand: string; nearbyProperties: NearbyProperty[] } | null = null;
   try {
     const res = await fetch(`${baseUrl}/api/check`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postcode: compact }),
+      body: JSON.stringify({ postcode: compact, houseNumber: houseNumber || undefined }),
       cache: "no-store",
     });
     if (res.ok) {

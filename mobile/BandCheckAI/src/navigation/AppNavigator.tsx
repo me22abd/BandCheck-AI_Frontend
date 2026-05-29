@@ -561,7 +561,18 @@ export function AppNavigator() {
   if (booting) {
     return (
       <View style={bootStyles.wrap}>
-        <ActivityIndicator color={editorial.colors.accent} />
+        <View style={bootStyles.wordmarkRow}>
+          <Text style={[bootStyles.wordmarkB, { fontFamily: fonts.sansSemiBold }]}>b</Text>
+          <Text style={[bootStyles.wordmarkC, { fontFamily: fonts.sansSemiBold }]}>c</Text>
+        </View>
+        <Text style={[bootStyles.wordmarkSub, { fontFamily: fonts.sansSemiBold }]}>
+          BandCheck <Text style={{ color: editorial.colors.accent }}>· AI</Text>
+        </Text>
+        <ActivityIndicator
+          size="small"
+          color={editorial.colors.accent}
+          style={bootStyles.spinner}
+        />
       </View>
     );
   }
@@ -583,5 +594,29 @@ const bootStyles = StyleSheet.create({
     backgroundColor: editorial.colors.paper,
     alignItems: "center",
     justifyContent: "center",
+  },
+  wordmarkRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginBottom: 8,
+  },
+  wordmarkB: {
+    fontSize: 52,
+    letterSpacing: -1.5,
+    color: editorial.colors.ink,
+  },
+  wordmarkC: {
+    fontSize: 52,
+    letterSpacing: -1.5,
+    color: editorial.colors.accent,
+  },
+  wordmarkSub: {
+    fontSize: 13,
+    letterSpacing: 0.2,
+    color: editorial.colors.ink,
+    marginBottom: 32,
+  },
+  spinner: {
+    marginTop: 4,
   },
 });

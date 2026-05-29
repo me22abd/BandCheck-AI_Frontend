@@ -117,6 +117,7 @@ function HomeContent() {
     : null;
 
   const [postcode, setPostcode] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<SiteStats | null>(null);
 
@@ -132,7 +133,10 @@ function HomeContent() {
     const normalized = normalizePostcode(postcode.trim());
     if (!normalized) return;
     setLoading(true);
-    const query = refPostcode ? `?ref=${refPostcode}` : "";
+    const qp = new URLSearchParams();
+    if (refPostcode) qp.set("ref", refPostcode);
+    if (houseNumber.trim()) qp.set("house", houseNumber.trim());
+    const query = qp.toString() ? `?${qp.toString()}` : "";
     router.push(`/results/${encodeURIComponent(normalized)}${query}`);
   }
 
@@ -162,14 +166,25 @@ function HomeContent() {
       {/* Postcode form */}
       <form onSubmit={handleSubmit} className="mt-8">
         <label htmlFor="postcode" className="sr-only">Your postcode</label>
+        <label htmlFor="houseNumber" className="sr-only">House number (optional)</label>
         <EditorialCard className="overflow-hidden p-1.5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+            <input
+              id="houseNumber"
+              name="houseNumber"
+              type="text"
+              autoComplete="address-line1"
+              placeholder="No. (optional)"
+              value={houseNumber}
+              onChange={(e) => setHouseNumber(e.target.value)}
+              className="min-h-12 w-24 shrink-0 rounded-xl border-0 bg-transparent px-4 text-base text-ink outline-none placeholder:text-ink-3 sm:border-r sm:border-hairline"
+            />
             <input
               id="postcode"
               name="postcode"
               type="text"
               autoComplete="postal-code"
-              placeholder="e.g. SW11 4NX"
+              placeholder="Postcode e.g. SW11 4NX"
               value={postcode}
               onChange={(e) => setPostcode(e.target.value)}
               className="min-h-12 flex-1 rounded-xl border-0 bg-transparent px-4 text-base text-ink outline-none placeholder:text-ink-3"
@@ -183,6 +198,9 @@ function HomeContent() {
             </button>
           </div>
         </EditorialCard>
+        <p className="mt-2 text-center text-xs text-ink-3">
+          Add your house number for a more accurate result
+        </p>
       </form>
 
       {/* Trust badges */}

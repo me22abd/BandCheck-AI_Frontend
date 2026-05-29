@@ -1,4 +1,4 @@
-import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { ActivityIndicator, View, Text, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,7 +13,6 @@ import { editorial } from "./src/theme/editorial";
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  // All hooks must be called unconditionally — before any early return
   const { ready, fonts } = useAppFonts();
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
@@ -24,7 +23,16 @@ export default function App() {
   }, [ready]);
 
   if (!ready) {
-    return null;
+    return (
+      <View style={styles.wrap}>
+        <View style={styles.wordmarkRow}>
+          <Text style={styles.b}>b</Text>
+          <Text style={styles.c}>c</Text>
+        </View>
+        <Text style={styles.sub}>BandCheck <Text style={{ color: editorial.colors.accent }}>· AI</Text></Text>
+        <ActivityIndicator size="small" color={editorial.colors.accent} style={styles.spinner} />
+      </View>
+    );
   }
 
   return (
@@ -40,10 +48,37 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  loading: {
+  wrap: {
     flex: 1,
+    backgroundColor: editorial.colors.paper,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: editorial.colors.paper,
+  },
+  wordmarkRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginBottom: 8,
+  },
+  b: {
+    fontSize: 52,
+    fontWeight: "700",
+    letterSpacing: -1.5,
+    color: editorial.colors.ink,
+  },
+  c: {
+    fontSize: 52,
+    fontWeight: "700",
+    letterSpacing: -1.5,
+    color: editorial.colors.accent,
+  },
+  sub: {
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.2,
+    color: editorial.colors.ink,
+    marginBottom: 32,
+  },
+  spinner: {
+    marginTop: 4,
   },
 });
