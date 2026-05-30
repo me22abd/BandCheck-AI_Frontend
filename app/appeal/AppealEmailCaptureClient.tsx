@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState, useMemo } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { EditorialCard } from "@/components/editorial/EditorialCard";
@@ -50,6 +50,8 @@ export function AppealEmailCaptureClient({
   comparablesRaw = "",
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const referredBy = searchParams.get("ref") ?? undefined;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -81,6 +83,7 @@ export function AppealEmailCaptureClient({
           userBand: band || undefined,
           draftAppeal: comparables.length > 0,
           comparables: comparables.length > 0 ? comparables : undefined,
+          referredBy: referredBy || undefined,
         }),
       });
       const json = await res.json().catch(() => ({}));

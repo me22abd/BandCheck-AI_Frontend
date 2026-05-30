@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { buildEvidencePdfBuffer } from "@/app/lib/buildEvidencePdf";
+import { fireAndForget } from "@/lib/db";
 
 // Must run on Node.js — pdfkit uses fs to load font files at runtime.
 // Edge runtime does not support fs and would silently drop the PDF.
@@ -13,6 +14,7 @@ type LeadBody = {
   postcode: string;
   userBand: string;
   draftAppeal: boolean;
+  referredBy?: string;
   comparables?: Comparable[];
   likelyBand?: string;
   score?: number;
@@ -74,6 +76,27 @@ function buildEmailHtml(body: LeadBody): string {
               <span style="font-size:20px;font-weight:700;color:#14120D;letter-spacing:-0.4px;">BandCheck<span style="color:#C8431C;">AI</span></span>
             </td>
           </tr>
+
+          <!-- Referral bonus banner (only when referred) -->
+          ${body.referredBy ? `
+          <tr>
+            <td style="padding-bottom:16px;">
+              <table width="100%" cellpadding="0" cellspacing="0"
+                     style="background:#F0F9F5;border-radius:12px;border:1px solid rgba(15,92,62,0.20);padding:12px 16px;">
+                <tr>
+                  <td>
+                    <p style="margin:0 0 3px;font-size:11px;font-weight:700;color:#0F5C3E;text-transform:uppercase;letter-spacing:0.7px;">
+                      🏘 Referred by a neighbour
+                    </p>
+                    <p style="margin:0;font-size:12px;color:#4A4435;line-height:1.5;">
+                      A neighbour near <strong>${formatPostcode(body.referredBy)}</strong> shared BandCheck AI with you.
+                      Your evidence pack has been prioritised.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>` : ""}
 
           <!-- Hero card -->
           <tr>
@@ -256,6 +279,7 @@ export async function POST(request: NextRequest) {
     postcode: String(raw.postcode).trim().toUpperCase().replace(/\s+/g, ""),
     userBand: String(raw.userBand).trim().toUpperCase().charAt(0),
     draftAppeal: raw.draftAppeal === true || raw.draftAppeal === "true",
+    referredBy: isString(raw.referredBy) ? String(raw.referredBy).trim().toUpperCase().replace(/\s+/g, "") : undefined,
     comparables: Array.isArray(raw.comparables)
       ? (raw.comparables as Comparable[]).filter(
           (c) => typeof c === "object" && c !== null && isString(c.address) && isString(c.band),
@@ -273,7 +297,13 @@ export async function POST(request: NextRequest) {
     totalOwed: optNum(raw.totalOwed),
   };
 
-  // --- Log lead (database integration point) ---
+  // --- Store lead in DB (fire-and-forget) ---
+  fireAndForget(
+    `INSERT INTO leads (email, postcode, user_band, referred_by)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT DO NOTHING`,
+    [lead.email, lead.postcode, lead.userBand, lead.referredBy ?? null],
+  );
   console.log("[lead]", JSON.stringify({ ...lead, ts: new Date().toISOString() }));
 
   // --- Send confirmation email (best-effort — never blocks the user) ---

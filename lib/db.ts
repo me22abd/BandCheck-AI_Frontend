@@ -88,5 +88,24 @@ export async function migrate(): Promise<void> {
       approved      BOOLEAN     NOT NULL DEFAULT false,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS leads (
+      id              SERIAL PRIMARY KEY,
+      email           TEXT        NOT NULL,
+      postcode        TEXT        NOT NULL,
+      user_band       TEXT,
+      referred_by     TEXT,
+      reminder_sent   BOOLEAN     NOT NULL DEFAULT false,
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_leads_email
+      ON leads (email);
+
+    CREATE INDEX IF NOT EXISTS idx_leads_postcode
+      ON leads (postcode);
+
+    CREATE INDEX IF NOT EXISTS idx_leads_created_at
+      ON leads (created_at);
   `);
 }
