@@ -260,11 +260,15 @@ export async function getCheckAnalysisForPostcode(
 
     // Identify the user's specific property by house number if supplied
     const hn = houseNumber?.trim().toLowerCase();
-    const userProp = hn
-      ? (props.find((p) => p.address.toLowerCase().includes(hn)) ?? props[0])
-      : props[0];
-
-    const userBand = userProp.band;
+    let userBand: string;
+    if (hn) {
+      const match = props.find((p) => p.address.toLowerCase().includes(hn));
+      userBand = match?.band ?? mostCommonBand(props.map((p) => p.band));
+    } else {
+      // No house number — use the mode band across all properties at this postcode
+      // (more accurate than picking props[0] which is alphabetically first)
+      userBand = mostCommonBand(props.map((p) => p.band));
+    }
 
     // Comparables = every other property at the postcode (exclude user's exact address)
     const nearbyProperties: NearbyProperty[] = props

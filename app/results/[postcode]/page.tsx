@@ -195,7 +195,8 @@ export default async function ResultsPage({
     .slice(0, 5)
     .map((p) => ({ address: p.address, band: p.band }));
   const comparablesQuery = encodeURIComponent(JSON.stringify(appealComparables));
-  const summaryHref = `/summary/${encodeURIComponent(compact)}`;
+  const houseQuery = houseNumber ? `?house=${encodeURIComponent(houseNumber)}` : "";
+  const summaryHref = `/summary/${encodeURIComponent(compact)}${houseQuery}`;
   const appealHref = `/appeal?postcode=${encodeURIComponent(compact)}&band=${encodeURIComponent(userBand)}&comparables=${comparablesQuery}`;
 
   return (
