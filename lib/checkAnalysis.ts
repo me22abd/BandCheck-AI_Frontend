@@ -260,19 +260,16 @@ export async function getCheckAnalysisForPostcode(
 
     // Identify the user's specific property by house number if supplied
     const hn = houseNumber?.trim().toLowerCase();
-    let userBand: string;
-    if (hn) {
-      const match = props.find((p) => p.address.toLowerCase().includes(hn));
-      userBand = match?.band ?? mostCommonBand(props.map((p) => p.band));
-    } else {
-      // No house number — use the mode band across all properties at this postcode
-      // (more accurate than picking props[0] which is alphabetically first)
-      userBand = mostCommonBand(props.map((p) => p.band));
-    }
+    const userProp = hn
+      ? (props.find((p) => p.address.toLowerCase().includes(hn)) ?? null)
+      : null;
+    const userBand = userProp
+      ? userProp.band
+      : mostCommonBand(props.map((p) => p.band));
 
     // Comparables = every other property at the postcode (exclude user's exact address)
     const nearbyProperties: NearbyProperty[] = props
-      .filter((p) => p.address !== userProp.address)
+      .filter((p) => !userProp || p.address !== userProp.address)
       .map((p) => ({ address: p.address, band: p.band }));
 
     // If only one property exists at this postcode, attempt provider comparables
@@ -282,7 +279,7 @@ export async function getCheckAnalysisForPostcode(
       const voaForComps = await lookupVoaBands(normalizedPostcode);
       if (voaForComps.ok) {
         finalComps = voaForComps.properties
-          .filter((p) => p.address !== userProp.address)
+          .filter((p) => !userProp || p.address !== userProp.address)
           .map((p) => ({ address: p.address, band: p.band }));
       }
     }
