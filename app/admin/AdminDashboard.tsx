@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { AdminData } from "@/lib/adminData";
+import type { AdminData, AdminTestimonial } from "@/lib/adminData";
 
 const TAB_LABELS = ["Overview", "Leads", "Checks", "Outcomes", "Testimonials"] as const;
 type Tab = (typeof TAB_LABELS)[number];
@@ -64,7 +64,44 @@ function Badge({
 export function AdminDashboard({ data }: { data: AdminData }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("Overview");
-  const { stats, recentLeads, recentChecks, outcomes, testimonials } = data;
+  const [testimonials, setTestimonials] = useState<AdminTestimonial[]>(
+    data.testimonials,
+  );
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
+  const { stats, recentLeads, recentChecks, outcomes } = data;
+
+  async function toggleApproval(id: number, approved: boolean) {
+    setUpdatingId(id);
+    setToggleError(null);
+
+    const previous = testimonials;
+    setTestimonials((items) =>
+      items.map((t) => (t.id === id ? { ...t, approved } : t)),
+    );
+
+    try {
+      const res = await fetch(`/api/admin/testimonials/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approved }),
+      });
+
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error("Update failed");
+      }
+    } catch {
+      setTestimonials(previous);
+      setToggleError("Could not update testimonial. Please try again.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -409,9 +446,15 @@ export function AdminDashboard({ data }: { data: AdminData }) {
 
         {tab === "Testimonials" && (
           <div>
-            <p className="mb-4 text-sm text-ink-3">
-              {testimonials.length} testimonials submitted
-            </p>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-ink-3">
+                {testimonials.length} submitted ·{" "}
+                {testimonials.filter((t) => t.approved).length} approved
+              </p>
+              {toggleError && (
+                <p className="text-xs font-medium text-accent">{toggleError}</p>
+              )}
+            </div>
             <div className="space-y-3">
               {testimonials.map((t) => (
                 <div
@@ -431,10 +474,29 @@ export function AdminDashboard({ data }: { data: AdminData }) {
                           : ""}
                       </p>
                     </div>
-                    <div className="shrink-0">
+                    <div className="flex shrink-0 flex-col items-end gap-2">
                       <Badge tone={t.approved ? "forest" : "gray"}>
                         {t.approved ? "Approved" : "Pending"}
                       </Badge>
+                      {t.approved ? (
+                        <button
+                          type="button"
+                          disabled={updatingId === t.id}
+                          onClick={() => toggleApproval(t.id, false)}
+                          className="rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-ink-2 transition-colors hover:bg-paper-2/60 hover:text-ink disabled:opacity-50"
+                        >
+                          {updatingId === t.id ? "Saving…" : "Unapprove"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={updatingId === t.id}
+                          onClick={() => toggleApproval(t.id, true)}
+                          className="rounded-lg bg-forest px-3 py-1.5 text-xs font-semibold text-paper transition-colors hover:bg-forest/90 disabled:opacity-50"
+                        >
+                          {updatingId === t.id ? "Saving…" : "Approve →"}
+                        </button>
+                      )}
                     </div>
                   </div>
                   <p className="mt-2 text-xs text-ink-3">{fmt(t.created_at)}</p>
