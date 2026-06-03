@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif } from "next/font/google";
 import { GeistMono, GeistSans } from "geist/font";
+import { AdminFooterHider } from "@/components/AdminFooterHider";
 import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
@@ -48,7 +49,9 @@ export default function RootLayout({
       <body className="min-h-screen bg-paper font-sans text-ink antialiased">
         <div className="animate-page-enter flex min-h-screen flex-col">
           <div className="flex-1">{children}</div>
-          <SiteFooter />
+          <AdminFooterHider>
+            <SiteFooter />
+          </AdminFooterHider>
         </div>
       </body>
     </html>
