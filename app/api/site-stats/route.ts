@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import {
+  getApprovedTestimonials,
+  type PublicTestimonial,
+} from "@/lib/testimonials";
 
 export const runtime = "nodejs";
 export const revalidate = 300; // cache for 5 minutes
@@ -9,6 +13,7 @@ export type SiteStats = {
   strongCaseCount: number;
   strongCasePct: number;
   totalTestimonials: number;
+  testimonials: PublicTestimonial[];
 };
 
 export async function GET() {
@@ -18,7 +23,7 @@ export async function GET() {
       strong_case_count: string;
     };
 
-    const [statsRows, testimonialRows] = await Promise.all([
+    const [statsRows, testimonialRows, testimonials] = await Promise.all([
       query<StatsRow>(`
         SELECT
           COUNT(*)::text                                     AS total_checks,
@@ -29,6 +34,7 @@ export async function GET() {
       query<{ count: string }>(`
         SELECT COUNT(*)::text AS count FROM testimonials WHERE approved = true
       `),
+      getApprovedTestimonials(6),
     ]);
 
     const totalChecks = parseInt(statsRows[0]?.total_checks ?? "0", 10);
@@ -43,6 +49,7 @@ export async function GET() {
       strongCaseCount,
       strongCasePct,
       totalTestimonials,
+      testimonials,
     };
 
     return NextResponse.json(stats, {
@@ -56,6 +63,7 @@ export async function GET() {
       strongCaseCount: 0,
       strongCasePct: 0,
       totalTestimonials: 0,
+      testimonials: [],
     });
   }
 }

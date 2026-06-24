@@ -35,7 +35,7 @@ const HOW_IT_WORKS = [
   },
 ];
 
-const TESTIMONIALS = [
+const FALLBACK_TESTIMONIALS = [
   {
     quote:
       "I had no idea I could do this myself. BandCheck AI found 8 nearby homes in a lower band — the appeal pack was ready in minutes.",
@@ -130,6 +130,14 @@ export function HomeContent() {
   const [houseNumber, setHouseNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<SiteStats | null>(null);
+
+  const testimonials =
+    stats?.testimonials && stats.testimonials.length > 0
+      ? stats.testimonials
+      : FALLBACK_TESTIMONIALS;
+  const showingLiveTestimonials = Boolean(
+    stats?.testimonials && stats.testimonials.length > 0,
+  );
 
   useEffect(() => {
     fetch("/api/site-stats")
@@ -268,11 +276,13 @@ export function HomeContent() {
       <section className="mt-14">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="font-serif text-xl text-ink">What homeowners say</h2>
-          <span className="text-xs text-ink-3">Real outcomes</span>
+          <span className="text-xs text-ink-3">
+            {showingLiveTestimonials ? "Verified outcomes" : "Real outcomes"}
+          </span>
         </div>
         <div className="space-y-3">
-          {TESTIMONIALS.map((t) => (
-            <EditorialCard key={t.name} className="p-5">
+          {testimonials.map((t) => (
+            <EditorialCard key={`${t.name}-${t.quote.slice(0, 24)}`} className="p-5">
               <p className="font-serif italic leading-relaxed text-ink text-[15px]">
                 &ldquo;{t.quote}&rdquo;
               </p>
@@ -280,9 +290,11 @@ export function HomeContent() {
                 <p className="text-xs text-ink-3">
                   — {t.name}, {t.area}
                 </p>
-                <span className="rounded-full bg-forest/10 px-2.5 py-1 text-xs font-semibold text-forest">
-                  {t.saving}
-                </span>
+                {t.saving ? (
+                  <span className="rounded-full bg-forest/10 px-2.5 py-1 text-xs font-semibold text-forest">
+                    {t.saving}
+                  </span>
+                ) : null}
               </div>
             </EditorialCard>
           ))}
