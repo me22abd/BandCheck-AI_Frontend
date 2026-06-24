@@ -5,6 +5,7 @@ import { Wordmark } from "@/components/editorial/Wordmark";
 
 const PRODUCT_LINKS = [
   { label: "How it works", href: "/how-it-works" },
+  { label: "FAQ", href: "/how-it-works#faq" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
   { label: "Check my band", href: "/" },
@@ -13,7 +14,7 @@ const PRODUCT_LINKS = [
 const LEGAL_LINKS = [
   { label: "Privacy policy", href: "/privacy" },
   { label: "Terms of service", href: "/terms" },
-  { label: "Contact us", href: "mailto:hello@bandcheckai.co.uk" },
+  { label: "Contact us", href: "/contact" },
 ];
 
 export function SiteFooter() {
@@ -65,21 +66,12 @@ export function SiteFooter() {
             <ul className="space-y-3">
               {LEGAL_LINKS.map(({ label, href }) => (
                 <li key={label}>
-                  {href.startsWith("mailto:") ? (
-                    <a
-                      href={href}
-                      className="text-sm text-ink-2 transition-colors hover:text-ink"
-                    >
-                      {label}
-                    </a>
-                  ) : (
-                    <Link
-                      href={href}
-                      className="text-sm text-ink-2 transition-colors hover:text-ink"
-                    >
-                      {label}
-                    </Link>
-                  )}
+                  <Link
+                    href={href}
+                    className="text-sm text-ink-2 transition-colors hover:text-ink"
+                  >
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>

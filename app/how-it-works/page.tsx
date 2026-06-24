@@ -4,6 +4,7 @@ import { EditorialButton } from "@/components/editorial/EditorialButton";
 import { EditorialCard } from "@/components/editorial/EditorialCard";
 import { SmallChip } from "@/components/editorial/SmallChip";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import { FaqSection } from "@/components/editorial/FaqSection";
 
 export const metadata = {
   title: "How It Works",
@@ -127,6 +128,8 @@ export default function HowItWorksPage() {
             ))}
           </div>
         </div>
+
+        <FaqSection />
 
         <EditorialCard className="mt-16 p-8 text-center">
           <h3 className="font-serif text-lg text-ink">

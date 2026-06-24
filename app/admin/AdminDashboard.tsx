@@ -6,6 +6,13 @@ import type { AdminData, AdminTestimonial } from "@/lib/adminData";
 
 const TAB_LABELS = ["Overview", "Leads", "Checks", "Outcomes", "Testimonials"] as const;
 type Tab = (typeof TAB_LABELS)[number];
+type TestimonialFilter = "all" | "pending" | "approved";
+
+const TESTIMONIAL_FILTERS: { id: TestimonialFilter; label: string }[] = [
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+  { id: "all", label: "All" },
+];
 
 function fmt(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-GB", {
@@ -69,7 +76,42 @@ export function AdminDashboard({ data }: { data: AdminData }) {
   );
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
+  const [testimonialFilter, setTestimonialFilter] =
+    useState<TestimonialFilter>("pending");
+  const [exporting, setExporting] = useState<"leads" | "outcomes" | null>(null);
   const { stats, recentLeads, recentChecks, outcomes } = data;
+
+  const filteredTestimonials = testimonials.filter((t) => {
+    if (testimonialFilter === "pending") return !t.approved;
+    if (testimonialFilter === "approved") return t.approved;
+    return true;
+  });
+
+  async function downloadCsv(type: "leads" | "outcomes") {
+    setExporting(type);
+    try {
+      const res = await fetch(`/api/admin/export?type=${type}`);
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+      if (!res.ok) throw new Error("Export failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download =
+        res.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ??
+        `bandcheck-${type}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setToggleError("Could not export CSV. Please try again.");
+    } finally {
+      setExporting(null);
+    }
+  }
 
   async function toggleApproval(id: number, approved: boolean) {
     setUpdatingId(id);
@@ -241,9 +283,19 @@ export function AdminDashboard({ data }: { data: AdminData }) {
 
         {tab === "Leads" && (
           <div>
-            <p className="mb-4 text-sm text-ink-3">
-              {recentLeads.length} most recent leads
-            </p>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-ink-3">
+                {recentLeads.length} most recent leads
+              </p>
+              <button
+                type="button"
+                disabled={exporting === "leads"}
+                onClick={() => downloadCsv("leads")}
+                className="rounded-lg border border-hairline bg-paper-card px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-paper-2/60 disabled:opacity-50"
+              >
+                {exporting === "leads" ? "Exporting…" : "↓ Export CSV"}
+              </button>
+            </div>
             <div className="overflow-x-auto rounded-editorial border border-hairline bg-paper-card shadow-editorial-sm">
               <table className="w-full text-sm">
                 <thead>
@@ -373,9 +425,19 @@ export function AdminDashboard({ data }: { data: AdminData }) {
 
         {tab === "Outcomes" && (
           <div>
-            <p className="mb-4 text-sm text-ink-3">
-              {outcomes.length} outcomes recorded
-            </p>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-ink-3">
+                {outcomes.length} outcomes recorded
+              </p>
+              <button
+                type="button"
+                disabled={exporting === "outcomes"}
+                onClick={() => downloadCsv("outcomes")}
+                className="rounded-lg border border-hairline bg-paper-card px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-paper-2/60 disabled:opacity-50"
+              >
+                {exporting === "outcomes" ? "Exporting…" : "↓ Export CSV"}
+              </button>
+            </div>
             <div className="overflow-x-auto rounded-editorial border border-hairline bg-paper-card shadow-editorial-sm">
               <table className="w-full text-sm">
                 <thead>
@@ -455,8 +517,35 @@ export function AdminDashboard({ data }: { data: AdminData }) {
                 <p className="text-xs font-medium text-accent">{toggleError}</p>
               )}
             </div>
+
+            <div className="mb-4 flex gap-1">
+              {TESTIMONIAL_FILTERS.map(({ id, label }) => {
+                const count =
+                  id === "all"
+                    ? testimonials.length
+                    : id === "pending"
+                      ? testimonials.filter((t) => !t.approved).length
+                      : testimonials.filter((t) => t.approved).length;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTestimonialFilter(id)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+                      testimonialFilter === id
+                        ? "bg-ink text-paper"
+                        : "text-ink-2 hover:bg-paper-2/60 hover:text-ink"
+                    }`}
+                  >
+                    {label}
+                    <span className="ml-1 opacity-70">({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="space-y-3">
-              {testimonials.map((t) => (
+              {filteredTestimonials.map((t) => (
                 <div
                   key={t.id}
                   className="rounded-editorial border border-hairline bg-paper-card p-5 shadow-editorial-sm"
@@ -502,9 +591,13 @@ export function AdminDashboard({ data }: { data: AdminData }) {
                   <p className="mt-2 text-xs text-ink-3">{fmt(t.created_at)}</p>
                 </div>
               ))}
-              {testimonials.length === 0 && (
+              {filteredTestimonials.length === 0 && (
                 <p className="rounded-editorial border border-hairline bg-paper-card px-4 py-8 text-center text-sm text-ink-3">
-                  No testimonials yet
+                  {testimonialFilter === "pending"
+                    ? "No pending testimonials"
+                    : testimonialFilter === "approved"
+                      ? "No approved testimonials yet"
+                      : "No testimonials yet"}
                 </p>
               )}
             </div>
