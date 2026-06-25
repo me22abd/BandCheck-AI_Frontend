@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AdminData, AdminTestimonial } from "@/lib/adminData";
+import { AdminChartsPanel } from "./AdminCharts";
 
 const TAB_LABELS = ["Overview", "Leads", "Checks", "Outcomes", "Testimonials"] as const;
 type Tab = (typeof TAB_LABELS)[number];
@@ -79,7 +80,7 @@ export function AdminDashboard({ data }: { data: AdminData }) {
   const [testimonialFilter, setTestimonialFilter] =
     useState<TestimonialFilter>("pending");
   const [exporting, setExporting] = useState<"leads" | "outcomes" | null>(null);
-  const { stats, recentLeads, recentChecks, outcomes } = data;
+  const { stats, charts, recentLeads, recentChecks, outcomes } = data;
 
   const filteredTestimonials = testimonials.filter((t) => {
     if (testimonialFilter === "pending") return !t.approved;
@@ -205,6 +206,8 @@ export function AdminDashboard({ data }: { data: AdminData }) {
                 value={Number(stats.total_testimonials || 0).toLocaleString()}
               />
             </div>
+
+            <AdminChartsPanel charts={charts} />
 
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
               <div>

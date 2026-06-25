@@ -1,4 +1,9 @@
 import { query, migrate } from "@/lib/db";
+import {
+  buildDailySeries,
+  EMPTY_CHARTS,
+  type AdminCharts,
+} from "@/lib/adminCharts";
 
 export type AdminStats = {
   total_checks: string;
@@ -49,6 +54,7 @@ export type AdminTestimonial = {
 
 export type AdminData = {
   stats: AdminStats;
+  charts: AdminCharts;
   recentLeads: AdminLead[];
   recentChecks: AdminCheck[];
   outcomes: AdminOutcome[];
@@ -66,7 +72,7 @@ export async function getAdminData(): Promise<AdminData> {
   try {
     await migrate();
 
-    const [stats, recentLeads, recentChecks, outcomes, testimonials] =
+    const [stats, leadsDailyRows, checksDailyRows, outcomeRows, recentLeads, recentChecks, outcomes, testimonials] =
       await Promise.all([
         query<AdminStats>(`
           SELECT
@@ -74,6 +80,25 @@ export async function getAdminData(): Promise<AdminData> {
             (SELECT COUNT(*)::text FROM leads)             AS total_leads,
             (SELECT COUNT(*)::text FROM appeal_outcomes)   AS total_outcomes,
             (SELECT COUNT(*)::text FROM testimonials)      AS total_testimonials
+        `),
+        query<{ day: string; count: string }>(`
+          SELECT created_at::date::text AS day, COUNT(*)::text AS count
+          FROM leads
+          WHERE created_at >= CURRENT_DATE - INTERVAL '29 days'
+          GROUP BY created_at::date
+          ORDER BY day
+        `),
+        query<{ day: string; count: string }>(`
+          SELECT checked_at::date::text AS day, COUNT(*)::text AS count
+          FROM postcode_checks
+          WHERE checked_at >= CURRENT_DATE - INTERVAL '29 days'
+          GROUP BY checked_at::date
+          ORDER BY day
+        `),
+        query<{ outcome: string; count: string }>(`
+          SELECT outcome, COUNT(*)::text AS count
+          FROM appeal_outcomes
+          GROUP BY outcome
         `),
         query<AdminLead>(`
           SELECT id, email, postcode, user_band, referred_by, reminder_sent, created_at
@@ -93,8 +118,30 @@ export async function getAdminData(): Promise<AdminData> {
         `),
       ]);
 
+    let successful = 0;
+    let unsuccessful = 0;
+    let other = 0;
+    for (const row of outcomeRows) {
+      const n = parseInt(row.count, 10) || 0;
+      if (row.outcome === "successful") successful += n;
+      else if (row.outcome === "unsuccessful") unsuccessful += n;
+      else other += n;
+    }
+
+    const charts: AdminCharts = {
+      leadsDaily: buildDailySeries(leadsDailyRows),
+      checksDaily: buildDailySeries(checksDailyRows),
+      outcomes: {
+        successful,
+        unsuccessful,
+        other,
+        total: successful + unsuccessful + other,
+      },
+    };
+
     return {
       stats: stats[0] ?? EMPTY_STATS,
+      charts,
       recentLeads,
       recentChecks,
       outcomes,
@@ -104,6 +151,7 @@ export async function getAdminData(): Promise<AdminData> {
     console.error("[admin] getAdminData failed:", err);
     return {
       stats: EMPTY_STATS,
+      charts: EMPTY_CHARTS,
       recentLeads: [],
       recentChecks: [],
       outcomes: [],

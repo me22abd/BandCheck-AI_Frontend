@@ -7,6 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "bandcheckai",
+    "description": "Check your UK council tax band in seconds. Compare your home against nearby properties, build a VOA-ready appeal pack, and track your appeal progress — free to check, no win no fee.",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,8 +16,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bandcheckai.mobile",
+      "subtitle": "Council tax band checker",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSUserNotificationsUsageDescription": "BandCheck AI sends reminders to help you complete and track your council tax appeal."
       }
     },
     "android": {
